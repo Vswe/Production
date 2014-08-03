@@ -4,7 +4,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityFurnace;
 import vswe.production.gui.container.slot.SlotBase;
+import vswe.production.gui.container.slot.SlotFuel;
 import vswe.production.network.DataReader;
 import vswe.production.network.DataWriter;
 import vswe.production.network.PacketHandler;
@@ -25,6 +27,18 @@ public class TileEntityTable extends TileEntity implements IInventory {
     private List<SlotBase> slots;
     private ItemStack[] items;
 
+    private int power;
+    public static final int MAX_POWER = 20000;
+    private SlotFuel fuelSlot;
+
+    public int getPower() {
+        return power;
+    }
+
+    public void setPower(int power) {
+        this.power = power;
+    }
+
     public TileEntityTable() {
         pages = new ArrayList<Page>();
         pages.add(new PageMain(this, "Main"));
@@ -34,6 +48,7 @@ public class TileEntityTable extends TileEntity implements IInventory {
 
         slots = new ArrayList<SlotBase>();
         int id = 0;
+        addSlot(fuelSlot = new SlotFuel(this, null, id++, 226, 226));
         for (Page page : pages) {
             id = page.createSlots(id);
         }
@@ -172,6 +187,10 @@ public class TileEntityTable extends TileEntity implements IInventory {
         PacketHandler.sendToPlayer(dw, player);
     }
 
+    public void sendDataToAllPlayer(DataType dataType) {
+        sendToAllPlayers(getWriterForType(dataType));
+    }
+
     private void sendDataToAllPlayersExcept(DataType dataType, EntityPlayer ignored) {
         sendToAllPlayersExcept(getWriterForType(dataType), ignored);
     }
@@ -229,6 +248,29 @@ public class TileEntityTable extends TileEntity implements IInventory {
                 DataType dataType = dr.readEnum(DataType.class);
                 dataType.load(this, dr);
                 break;
+        }
+    }
+
+    @Override
+    public void updateEntity() {
+        reloadFuel();
+        for (Page page : pages) {
+            page.onUpdate();
+        }
+    }
+
+    //TODO handle container items
+    private void reloadFuel() {
+        if (!worldObj.isRemote) {
+            ItemStack fuel = fuelSlot.getStack();
+            if (fuel != null) {
+                int fuelLevel = TileEntityFurnace.getItemBurnTime(fuel);
+                if (fuelLevel > 0 && fuelLevel + power <= MAX_POWER) {
+                    power += fuelLevel;
+                    decrStackSize(fuelSlot.getSlotIndex(), 1);
+                    sendDataToAllPlayer(DataType.POWER);
+                }
+            }
         }
     }
 }

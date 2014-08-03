@@ -33,6 +33,9 @@ public abstract class Unit {
     }
 
     public abstract int createSlots(int id);
+
+    public void onUpdate() {}
+
     public abstract boolean isEnabled();
 
     //TODO make sure this is triggered when items enter through, for instance, hoppers. If it don't, trigger this from the tile entity rather than from the slot. (it probably don't work to be honest)

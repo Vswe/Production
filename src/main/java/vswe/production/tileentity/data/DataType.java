@@ -6,8 +6,12 @@ import vswe.production.network.DataWriter;
 import vswe.production.tileentity.TileEntityTable;
 
 public enum DataType {
-    PAGE(DataPage.class);
-
+    PAGE(DataPage.class),
+    SMELT_1(DataSmelting.DataSmelting1.class),
+    SMELT_2(DataSmelting.DataSmelting2.class),
+    SMELT_3(DataSmelting.DataSmelting3.class),
+    SMELT_4(DataSmelting.DataSmelting4.class),
+    POWER(DataFuel.class);
     private DataBase data;
 
     DataType(Class<? extends DataBase> clazz) {

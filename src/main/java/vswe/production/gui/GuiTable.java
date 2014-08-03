@@ -35,6 +35,7 @@ public class GuiTable extends GuiBase {
 
         drawPageHeaders(mX, mY);
         drawSlots();
+        drawPower(mX, mY);
         table.getSelectedPage().draw(this, mX, mY);
 
         GL11.glPopMatrix();
@@ -113,4 +114,36 @@ public class GuiTable extends GuiBase {
             }
         }
     }
+
+
+    private static final int POWER_X = 225;
+    private static final int POWER_Y = 173;
+    private static final int POWER_WIDTH = 18;
+    private static final int POWER_HEIGHT = 50;
+    private static final int POWER_INNER_WIDTH = 16;
+    private static final int POWER_INNER_HEIGHT = 48;
+
+    private static final int POWER_INNER_SRC_X = 0;
+    private static final int POWER_INNER_SRC_Y = 64;
+    private static final int POWER_SRC_X = 32;
+    private static final int POWER_SRC_Y = 62;
+
+    private static final int POWER_INNER_OFFSET_X = (POWER_WIDTH - POWER_INNER_WIDTH) / 2;
+    private static final int POWER_INNER_OFFSET_Y = (POWER_HEIGHT - POWER_INNER_HEIGHT) / 2;
+
+    private void drawPower(int mX, int mY) {
+        drawRect(POWER_X + POWER_INNER_OFFSET_X, POWER_Y + POWER_INNER_OFFSET_Y, POWER_INNER_SRC_X + POWER_INNER_WIDTH, POWER_INNER_SRC_Y, POWER_INNER_WIDTH, POWER_INNER_HEIGHT);
+
+        int height = POWER_INNER_HEIGHT * table.getPower() / TileEntityTable.MAX_POWER;
+        int offset = POWER_INNER_HEIGHT - height;
+        drawRect(POWER_X + POWER_INNER_OFFSET_X, POWER_Y + POWER_INNER_OFFSET_Y + offset, POWER_INNER_SRC_X, POWER_INNER_SRC_Y + offset, POWER_INNER_WIDTH, height);
+        drawRect(POWER_X, POWER_Y + POWER_INNER_OFFSET_Y + offset - 1, POWER_SRC_X, POWER_SRC_Y - 1, POWER_WIDTH, 1);
+
+        int srcX = POWER_SRC_X;
+        if (inBounds(POWER_X, POWER_Y, POWER_WIDTH, POWER_HEIGHT, mX, mY)) {
+            srcX += POWER_WIDTH;
+        }
+        drawRect(POWER_X, POWER_Y, srcX, POWER_SRC_Y, POWER_WIDTH, POWER_HEIGHT);
+    }
+
 }

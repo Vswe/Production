@@ -37,4 +37,6 @@ public abstract class Page {
     public int getId() {
         return id;
     }
+
+    public void onUpdate() {}
 }

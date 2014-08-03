@@ -39,7 +39,7 @@ public class SlotBase extends Slot {
     }
 
     public boolean isVisible() {
-        return page.equals(table.getSelectedPage());
+        return page == null || page.equals(table.getSelectedPage());
     }
 
     public boolean isEnabled() {

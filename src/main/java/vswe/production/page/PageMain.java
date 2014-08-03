@@ -3,6 +3,7 @@ package vswe.production.page;
 import vswe.production.gui.GuiBase;
 import vswe.production.page.unit.Unit;
 import vswe.production.page.unit.UnitCrafting;
+import vswe.production.page.unit.UnitSmelting;
 import vswe.production.tileentity.TileEntityTable;
 
 import java.util.ArrayList;
@@ -11,20 +12,47 @@ import java.util.List;
 
 public class PageMain extends Page {
     private List<Unit> units;
+    private List<UnitCrafting> craftingList;
+    private List<UnitSmelting> smeltingList;
+
 
     public PageMain(TileEntityTable table, String name) {
         super(table, name);
 
         units = new ArrayList<Unit>();
+        craftingList = new ArrayList<UnitCrafting>();
+        smeltingList = new ArrayList<UnitSmelting>();
         for (int i = 0; i < 4; i++){
             addUnit(i);
         }
     }
 
     private void addUnit(int id) {
-        int x = id % 2;
-        int y = id / 2;
-        units.add(new UnitCrafting(table, this, id, x * WIDTH / 2, y * HEIGHT / 2));
+        int x = (id % 2) * WIDTH / 2;
+        int y = (id / 2) * HEIGHT / 2;
+        UnitCrafting crafting = new UnitCrafting(table, this, id, x, y );
+        UnitSmelting smelting = new UnitSmelting(table, this, id, x, y );
+        craftingList.add(crafting);
+        smeltingList.add(smelting);
+        units.add(crafting);
+        units.add(smelting);
+    }
+
+    public List<UnitSmelting> getSmeltingList() {
+        return smeltingList;
+    }
+
+    public List<UnitCrafting> getCraftingList() {
+        return craftingList;
+    }
+
+    @Override
+    public void onUpdate() {
+        for (Unit unit : units) {
+            if (unit.isEnabled()) {
+                unit.onUpdate();
+            }
+        }
     }
 
     @Override
