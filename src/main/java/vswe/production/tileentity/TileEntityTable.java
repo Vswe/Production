@@ -262,6 +262,7 @@ public class TileEntityTable extends TileEntity implements IInventory {
         }
     }
 
+    private int lastPower;
     //TODO handle container items
     private void reloadFuel() {
         if (!worldObj.isRemote) {
@@ -271,8 +272,12 @@ public class TileEntityTable extends TileEntity implements IInventory {
                 if (fuelLevel > 0 && fuelLevel + power <= MAX_POWER) {
                     power += fuelLevel;
                     decrStackSize(fuelSlot.getSlotIndex(), 1);
-                    sendDataToAllPlayer(DataType.POWER);
                 }
+            }
+
+            if (power != lastPower) {
+                lastPower = power;
+                sendDataToAllPlayer(DataType.POWER);
             }
         }
     }
