@@ -22,9 +22,14 @@ public class PageUpgrades extends Page {
     public int createSlots(int id) {
         for (int y = 0; y < 2; y++) {
             for (int x = 0; x < 2; x++) {
+                SlotUpgrade main = null;
                 for (int r = 0; r < SLOT_ROWS; r++) {
                     for (int c = 0; c < SLOTS_PER_ROW; c++) {
-                        addSlot(new SlotUpgrade(table, this, id++, START_X + OFFSET_X * x + SLOT_SIZE * c, START_Y + OFFSET_Y * y + SLOT_SIZE * r));
+                        SlotUpgrade slot = new SlotUpgrade(table, this, id++, START_X + OFFSET_X * x + SLOT_SIZE * c, START_Y + OFFSET_Y * y + SLOT_SIZE * r, main);
+                        addSlot(slot);
+                        if (main == null) {
+                            main = slot;
+                        }
                     }
                 }
             }

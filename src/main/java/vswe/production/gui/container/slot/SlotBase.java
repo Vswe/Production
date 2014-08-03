@@ -1,6 +1,5 @@
 package vswe.production.gui.container.slot;
 
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import vswe.production.page.Page;
@@ -20,10 +19,12 @@ public class SlotBase extends Slot {
 
         this.x = x;
         this.y = y;
+
+        update(isVisible(), isEnabled());
     }
 
-    public void update() {
-        if (isVisible()) {
+    public void update(boolean visible, boolean enabled) {
+        if (visible && enabled) {
             xDisplayPosition = x;
             yDisplayPosition = y;
         }else{
@@ -34,10 +35,22 @@ public class SlotBase extends Slot {
 
     @Override
     public boolean isItemValid(ItemStack itemstack) {
-        return isVisible();
+        return isVisible() && isEnabled();
     }
 
     public boolean isVisible() {
-        return table.getSelectedPage().equals(page);
+        return page.equals(table.getSelectedPage());
+    }
+
+    public boolean isEnabled() {
+        return true;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
     }
 }

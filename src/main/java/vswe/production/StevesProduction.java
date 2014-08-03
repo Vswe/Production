@@ -9,6 +9,7 @@ import cpw.mods.fml.common.network.FMLEventChannel;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import vswe.production.block.ModBlocks;
 import vswe.production.gui.GuiHandler;
+import vswe.production.network.PacketHandler;
 
 @Mod(modid = "StevesProduction", name = "Steve's Production", version = "inDev")
 public class StevesProduction {
@@ -29,7 +30,7 @@ public class StevesProduction {
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         NetworkRegistry.INSTANCE.registerGuiHandler(instance, new GuiHandler());
-        //packetHandler.register(new PacketEventHandler());
+        packetHandler.register(new PacketHandler());
     }
 
     @Mod.EventHandler

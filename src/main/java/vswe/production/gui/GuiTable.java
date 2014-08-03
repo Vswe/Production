@@ -7,6 +7,7 @@ import vswe.production.gui.container.ContainerTable;
 import vswe.production.gui.container.slot.SlotBase;
 import vswe.production.page.Page;
 import vswe.production.tileentity.TileEntityTable;
+import vswe.production.tileentity.data.DataType;
 
 
 public class GuiTable extends GuiBase {
@@ -84,6 +85,7 @@ public class GuiTable extends GuiBase {
             int y = HEADER_Y + HEADER_HEIGHT * i;
             if (inBounds(HEADER_X, y, HEADER_FULL_WIDTH, HEADER_HEIGHT, mX, mY)) {
                 table.setSelectedPage(page);
+                table.updateServer(DataType.PAGE);
                 break;
             }
         }
@@ -97,8 +99,11 @@ public class GuiTable extends GuiBase {
     private void drawSlots() {
         prepare();
         for (SlotBase slot : table.getSlots()) {
-            if (slot.isVisible()) {
-                drawRect(slot.xDisplayPosition + SLOT_OFFSET, slot.yDisplayPosition + SLOT_OFFSET, SLOT_SRC_X, SLOT_SRC_Y, SLOT_SIZE, SLOT_SIZE);
+            boolean visible = slot.isVisible();
+            boolean enabled = slot.isEnabled();
+            slot.update(visible, enabled);
+            if (visible) {
+                drawRect(slot.getX() + SLOT_OFFSET, slot.getY() + SLOT_OFFSET, SLOT_SRC_X, SLOT_SRC_Y + (enabled ? 0 : SLOT_SIZE), SLOT_SIZE, SLOT_SIZE);
             }
         }
     }

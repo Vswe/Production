@@ -10,9 +10,11 @@ import vswe.production.tileentity.TileEntityTable;
 public class Page {
     private String name;
     protected TileEntityTable table;
+    private int id;
 
 
     public Page(TileEntityTable table, String name) {
+        this.id = table.getPages().size();
         this.table = table;
         this.name = name;
     }
@@ -32,5 +34,9 @@ public class Page {
     @SideOnly(Side.CLIENT)
     public void draw(GuiBase gui, int mX, int mY) {
         gui.drawString(name, 8, 6, 0x404040);
+    }
+
+    public int getId() {
+        return id;
     }
 }

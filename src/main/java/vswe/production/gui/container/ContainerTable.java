@@ -4,6 +4,7 @@ package vswe.production.gui.container;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
+import net.minecraft.inventory.ICrafting;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import vswe.production.gui.container.slot.SlotBase;
@@ -44,7 +45,23 @@ public class ContainerTable extends Container {
     }
 
 
+    @Override
+    public void addCraftingToCrafters(ICrafting player) {
+        super.addCraftingToCrafters(player);
 
+        if (player instanceof EntityPlayer) {
+            table.addPlayer((EntityPlayer)player);
+        }
+    }
+
+    @Override
+    public void removeCraftingFromCrafters(ICrafting player) {
+        super.removeCraftingFromCrafters(player);
+
+        if (player instanceof EntityPlayer) {
+            table.removePlayer((EntityPlayer)player);
+        }
+    }
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int i) {
@@ -150,5 +167,9 @@ public class ContainerTable extends Container {
         }
 
         return result;
+    }
+
+    public TileEntityTable getTable() {
+        return table;
     }
 }

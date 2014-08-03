@@ -5,8 +5,13 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import vswe.production.gui.container.slot.SlotBase;
+import vswe.production.network.DataReader;
+import vswe.production.network.DataWriter;
+import vswe.production.network.PacketHandler;
+import vswe.production.network.PacketId;
 import vswe.production.page.Page;
 import vswe.production.page.PageUpgrades;
+import vswe.production.tileentity.data.DataType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,9 +54,6 @@ public class TileEntityTable extends TileEntity implements IInventory {
 
     public void setSelectedPage(Page selectedPage) {
         this.selectedPage = selectedPage;
-        for (SlotBase slot : slots) {
-            slot.update();
-        }
     }
 
     @Override
@@ -116,7 +118,7 @@ public class TileEntityTable extends TileEntity implements IInventory {
 
     @Override
     public boolean isItemValidForSlot(int id, ItemStack item) {
-        return true;
+        return slots.get(id).isItemValid(item);
     }
 
     @Override
@@ -136,5 +138,83 @@ public class TileEntityTable extends TileEntity implements IInventory {
 
     public void addSlot(SlotBase slot) {
         slots.add(slot);
+    }
+
+    private List<EntityPlayer> players = new ArrayList<EntityPlayer>();
+    public void addPlayer(EntityPlayer player) {
+        if (!players.contains(player)) {
+            players.add(player);
+            sendAllDataToPlayer(player);
+        }else{
+            System.err.println("Trying to add a listening player: " + player.toString());
+        }
+    }
+
+    private void sendAllDataToPlayer(EntityPlayer player) {
+        DataWriter dw = PacketHandler.getWriter(PacketId.ALL);
+        for (DataType dataType : DataType.values()) {
+            dataType.save(this, dw);
+        }
+        PacketHandler.sendToPlayer(dw, player);
+    }
+
+    private void sendDataToAllPlayersExcept(DataType dataType, EntityPlayer ignored) {
+        sendToAllPlayersExcept(getWriterForType(dataType), ignored);
+    }
+
+    private void sendToAllPlayers(DataWriter dw) {
+        sendToAllPlayersExcept(dw, null);
+    }
+
+    private void sendToAllPlayersExcept(DataWriter dw, EntityPlayer ignored) {
+        for (EntityPlayer player : players) {
+            if (!player.equals(ignored)) {
+                PacketHandler.sendToPlayer(dw, player);
+            }
+        }
+    }
+
+    public void removePlayer(EntityPlayer player) {
+        if (!players.remove(player)) {
+            System.err.println("Trying to remove non-listening player: " + player.toString());
+        }
+    }
+
+    public void updateServer(DataType dataType) {
+        PacketHandler.sendToServer(getWriterForType(dataType));
+    }
+
+    private DataWriter getWriterForType(DataType dataType) {
+        DataWriter dw = PacketHandler.getWriter(PacketId.TYPE);
+        dw.writeEnum(dataType);
+        dataType.save(this, dw);
+
+        return dw;
+    }
+
+    public void receiveServerPacket(DataReader dr, PacketId id, EntityPlayer player) {
+        switch (id) {
+            case TYPE:
+                DataType dataType = dr.readEnum(DataType.class);
+                dataType.load(this, dr);
+                if (dataType.shouldBounce(this)) {
+                    sendDataToAllPlayersExcept(dataType, dataType.shouldBounceToAll(this) ? null : player);
+                }
+                break;
+        }
+    }
+
+    public void receiveClientPacket(DataReader dr, PacketId id) {
+        switch (id) {
+            case ALL:
+                for (DataType dataType : DataType.values()) {
+                    dataType.load(this, dr);
+                }
+                break;
+            case TYPE:
+                DataType dataType = dr.readEnum(DataType.class);
+                dataType.load(this, dr);
+                break;
+        }
     }
 }
