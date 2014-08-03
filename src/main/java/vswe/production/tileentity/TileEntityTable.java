@@ -10,6 +10,8 @@ import vswe.production.network.DataWriter;
 import vswe.production.network.PacketHandler;
 import vswe.production.network.PacketId;
 import vswe.production.page.Page;
+import vswe.production.page.PageMain;
+import vswe.production.page.PageTransfer;
 import vswe.production.page.PageUpgrades;
 import vswe.production.tileentity.data.DataType;
 
@@ -25,8 +27,8 @@ public class TileEntityTable extends TileEntity implements IInventory {
 
     public TileEntityTable() {
         pages = new ArrayList<Page>();
-        pages.add(new Page(this, "Main"));
-        pages.add(new Page(this, "Transfer"));
+        pages.add(new PageMain(this, "Main"));
+        pages.add(new PageTransfer(this, "Transfer"));
         pages.add(new PageUpgrades(this, "Upgrades"));
 
 
@@ -59,6 +61,18 @@ public class TileEntityTable extends TileEntity implements IInventory {
     @Override
     public int getSizeInventory() {
         return items.length;
+    }
+
+    public PageMain getMainPage() {
+        return (PageMain)pages.get(0);
+    }
+
+    public PageTransfer getTransferPage() {
+        return (PageTransfer)pages.get(1);
+    }
+
+    public PageUpgrades getUpgradePage() {
+        return (PageUpgrades)pages.get(2);
     }
 
     @Override

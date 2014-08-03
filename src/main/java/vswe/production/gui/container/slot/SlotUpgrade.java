@@ -21,4 +21,9 @@ public class SlotUpgrade extends SlotBase {
     public boolean isEnabled() {
         return main == null || main.getHasStack();
     }
+
+    @Override
+    public int getTextureIndex() {
+        return main == null && getHasStack() ? 2 : super.getTextureIndex();
+    }
 }

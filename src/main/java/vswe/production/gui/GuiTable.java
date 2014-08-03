@@ -96,14 +96,20 @@ public class GuiTable extends GuiBase {
     private static final int SLOT_SRC_Y = 0;
     private static final int SLOT_SIZE = 18;
     private static final int SLOT_OFFSET = -1;
+    private static final int SLOT_BIG_SIZE = 26;
+    private static final int SLOT_BIG_OFFSET = SLOT_OFFSET - (SLOT_BIG_SIZE - SLOT_SIZE) / 2;
     private void drawSlots() {
         prepare();
         for (SlotBase slot : table.getSlots()) {
             boolean visible = slot.isVisible();
-            boolean enabled = slot.isEnabled();
-            slot.update(visible, enabled);
+            slot.update(visible);
             if (visible) {
-                drawRect(slot.getX() + SLOT_OFFSET, slot.getY() + SLOT_OFFSET, SLOT_SRC_X, SLOT_SRC_Y + (enabled ? 0 : SLOT_SIZE), SLOT_SIZE, SLOT_SIZE);
+                boolean isBig = slot.isBig();
+                int srcY = isBig ? SLOT_SIZE + SLOT_SRC_Y : SLOT_SRC_Y;
+                int size = isBig ? SLOT_BIG_SIZE : SLOT_SIZE;
+                int offset = isBig ? SLOT_BIG_OFFSET : SLOT_OFFSET;
+
+                drawRect(slot.getX() + offset, slot.getY() + offset, SLOT_SRC_X + slot.getTextureIndex() * size, srcY, size, size);
             }
         }
     }

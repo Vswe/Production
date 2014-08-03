@@ -20,11 +20,11 @@ public class SlotBase extends Slot {
         this.x = x;
         this.y = y;
 
-        update(isVisible(), isEnabled());
+        update(isVisible());
     }
 
-    public void update(boolean visible, boolean enabled) {
-        if (visible && enabled) {
+    public void update(boolean visible) {
+        if (visible && isEnabled()) {
             xDisplayPosition = x;
             yDisplayPosition = y;
         }else{
@@ -52,5 +52,13 @@ public class SlotBase extends Slot {
 
     public int getY() {
         return y;
+    }
+
+    public int getTextureIndex() {
+        return isEnabled() ? 0 : 1;
+    }
+
+    public boolean isBig() {
+        return false;
     }
 }

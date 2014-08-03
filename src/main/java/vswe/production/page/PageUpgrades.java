@@ -1,5 +1,6 @@
 package vswe.production.page;
 
+import net.minecraft.item.ItemStack;
 import vswe.production.gui.container.slot.SlotBase;
 import vswe.production.gui.container.slot.SlotUpgrade;
 import vswe.production.tileentity.TileEntityTable;
@@ -18,8 +19,12 @@ public class PageUpgrades extends Page {
         super(table, name);
     }
 
+    private int startId;
+
     @Override
     public int createSlots(int id) {
+        startId = id;
+
         for (int y = 0; y < 2; y++) {
             for (int x = 0; x < 2; x++) {
                 SlotUpgrade main = null;
@@ -35,6 +40,10 @@ public class PageUpgrades extends Page {
             }
         }
 
-        return super.createSlots(id);
+        return id;
+    }
+
+    public ItemStack getUpgradeMainItem(int id) {
+        return table.getSlots().get(startId + id * SLOT_ROWS * SLOTS_PER_ROW).getStack();
     }
 }

@@ -7,7 +7,7 @@ import vswe.production.gui.container.slot.SlotBase;
 import vswe.production.tileentity.TileEntityTable;
 
 
-public class Page {
+public abstract class Page {
     private String name;
     protected TileEntityTable table;
     private int id;
@@ -23,9 +23,7 @@ public class Page {
         return name;
     }
 
-    public int createSlots(int id) {
-        return id;
-    }
+    public abstract int createSlots(int id);
 
     protected void addSlot(SlotBase slot) {
         table.addSlot(slot);
