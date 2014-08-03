@@ -5,6 +5,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import org.lwjgl.opengl.GL11;
 import vswe.production.gui.container.ContainerTable;
 import vswe.production.gui.container.slot.SlotBase;
+import vswe.production.network.DataWriter;
+import vswe.production.network.PacketHandler;
+import vswe.production.network.PacketId;
 import vswe.production.page.Page;
 import vswe.production.tileentity.TileEntityTable;
 import vswe.production.tileentity.data.DataType;
@@ -146,4 +149,10 @@ public class GuiTable extends GuiBase {
         drawRect(POWER_X, POWER_Y, srcX, POWER_SRC_Y, POWER_WIDTH, POWER_HEIGHT);
     }
 
+    @Override
+    public void onGuiClosed() {
+        super.onGuiClosed();
+
+        PacketHandler.sendToServer(PacketHandler.getWriter(table, PacketId.CLOSE));
+    }
 }

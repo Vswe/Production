@@ -8,6 +8,9 @@ import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetHandlerPlayServer;
+import net.minecraft.network.play.INetHandlerPlayClient;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
 import vswe.production.gui.container.ContainerTable;
 import vswe.production.tileentity.TileEntityTable;
 
@@ -17,29 +20,51 @@ public class PacketHandler {
     @SideOnly(Side.CLIENT)
     @SubscribeEvent
     public void onClientPacket(FMLNetworkEvent.ClientCustomPacketEvent event) {
-        EntityPlayer player = FMLClientHandler.instance().getClient().thePlayer;
-        if (player.openContainer instanceof ContainerTable) {
-            TileEntityTable table = ((ContainerTable)player.openContainer).getTable();
-            DataReader dr = new DataReader(event.packet.payload());
-            PacketId id = dr.readEnum(PacketId.class);
-            table.receiveClientPacket(dr, id);
-        }
+        onPacket(event, FMLClientHandler.instance().getClient().thePlayer, false);
     }
 
     @SubscribeEvent
     public void onServerPacket(FMLNetworkEvent.ServerCustomPacketEvent event) {
-        EntityPlayer player = ((NetHandlerPlayServer)event.handler).playerEntity;
-        if (player.openContainer instanceof ContainerTable) {
-            TileEntityTable table = ((ContainerTable)player.openContainer).getTable();
-            DataReader dr = new DataReader(event.packet.payload());
-            PacketId id = dr.readEnum(PacketId.class);
-            table.receiveServerPacket(dr, id, player);
+        onPacket(event, ((NetHandlerPlayServer)event.handler).playerEntity, true);
+    }
+
+    private void onPacket(FMLNetworkEvent.CustomPacketEvent event, EntityPlayer player, boolean onServer) {
+        DataReader dr = new DataReader(event.packet.payload());
+        PacketId id = dr.readEnum(PacketId.class);
+        TileEntityTable table = null;
+
+        if (id.isInInterface()) {
+            if (player.openContainer instanceof ContainerTable) {
+                table = ((ContainerTable)player.openContainer).getTable();
+            }
+        }else{
+            int x = dr.readSignedInteger();
+            int y = dr.readSignedInteger();
+            int z = dr.readSignedInteger();
+            World world = player.worldObj;
+            TileEntity te = world.getTileEntity(x, y, z);
+            if (te instanceof TileEntityTable) {
+                table = (TileEntityTable)te;
+            }
+        }
+
+        if (table != null) {
+            if (onServer) {
+                table.receiveServerPacket(dr, id, player);
+            }else{
+                table.receiveClientPacket(dr, id);
+            }
         }
     }
 
-    public static DataWriter getWriter(PacketId id) {
+    public static DataWriter getWriter(TileEntityTable table, PacketId id) {
         DataWriter dw = new DataWriter();
         dw.writeEnum(id);
+        if (!id.isInInterface()) {
+            dw.writeInteger(table.xCoord);
+            dw.writeInteger(table.yCoord);
+            dw.writeInteger(table.zCoord);
+        }
         return dw;
     }
 
@@ -50,4 +75,5 @@ public class PacketHandler {
     public static void sendToServer(DataWriter dw) {
         dw.sendToServer();
     }
+
 }

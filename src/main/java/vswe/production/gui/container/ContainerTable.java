@@ -54,14 +54,6 @@ public class ContainerTable extends Container {
         }
     }
 
-    @Override
-    public void removeCraftingFromCrafters(ICrafting player) {
-        super.removeCraftingFromCrafters(player);
-
-        if (player instanceof EntityPlayer) {
-            table.removePlayer((EntityPlayer)player);
-        }
-    }
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int i) {

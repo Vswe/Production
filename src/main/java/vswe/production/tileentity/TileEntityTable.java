@@ -180,7 +180,7 @@ public class TileEntityTable extends TileEntity implements IInventory {
     }
 
     private void sendAllDataToPlayer(EntityPlayer player) {
-        DataWriter dw = PacketHandler.getWriter(PacketId.ALL);
+        DataWriter dw = PacketHandler.getWriter(this, PacketId.ALL);
         for (DataType dataType : DataType.values()) {
             dataType.save(this, dw);
         }
@@ -218,7 +218,7 @@ public class TileEntityTable extends TileEntity implements IInventory {
     }
 
     private DataWriter getWriterForType(DataType dataType) {
-        DataWriter dw = PacketHandler.getWriter(PacketId.TYPE);
+        DataWriter dw = PacketHandler.getWriter(this, PacketId.TYPE);
         dw.writeEnum(dataType);
         dataType.save(this, dw);
 
@@ -233,6 +233,9 @@ public class TileEntityTable extends TileEntity implements IInventory {
                 if (dataType.shouldBounce(this)) {
                     sendDataToAllPlayersExcept(dataType, dataType.shouldBounceToAll(this) ? null : player);
                 }
+                break;
+            case CLOSE:
+                removePlayer(player);
                 break;
         }
     }
