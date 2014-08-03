@@ -4,6 +4,7 @@ package vswe.production.gui;
 import net.minecraft.entity.player.EntityPlayer;
 import org.lwjgl.opengl.GL11;
 import vswe.production.gui.container.ContainerTable;
+import vswe.production.gui.container.slot.SlotBase;
 import vswe.production.page.Page;
 import vswe.production.tileentity.TileEntityTable;
 
@@ -32,6 +33,8 @@ public class GuiTable extends GuiBase {
         drawTexturedModalRect(0, 0, 0, 0, xSize, ySize);
 
         drawPageHeaders(mX, mY);
+        drawSlots();
+        table.getSelectedPage().draw(this, mX, mY);
 
         GL11.glPopMatrix();
     }
@@ -87,4 +90,16 @@ public class GuiTable extends GuiBase {
     }
 
 
+    private static final int SLOT_SRC_X = 42;
+    private static final int SLOT_SRC_Y = 0;
+    private static final int SLOT_SIZE = 18;
+    private static final int SLOT_OFFSET = -1;
+    private void drawSlots() {
+        prepare();
+        for (SlotBase slot : table.getSlots()) {
+            if (slot.isVisible()) {
+                drawRect(slot.xDisplayPosition + SLOT_OFFSET, slot.yDisplayPosition + SLOT_OFFSET, SLOT_SRC_X, SLOT_SRC_Y, SLOT_SIZE, SLOT_SIZE);
+            }
+        }
+    }
 }

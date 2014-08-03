@@ -6,6 +6,7 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import vswe.production.gui.container.slot.SlotBase;
 import vswe.production.tileentity.TileEntityTable;
 
 public class ContainerTable extends Container {
@@ -13,6 +14,10 @@ public class ContainerTable extends Container {
 
     public ContainerTable(TileEntityTable table, EntityPlayer player) {
         this.table = table;
+
+        for (SlotBase slot : table.getSlots()) {
+            addSlotToContainer(slot);
+        }
 
         InventoryPlayer inventory = player.inventory;
         for (int y = 0; y < NORMAL_ROWS; y++) {
