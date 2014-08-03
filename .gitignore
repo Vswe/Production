@@ -6,3 +6,8 @@ build/
 .gradle/
 libs/
 out/
+*.lnk
+*.py
+*.bat
+*gradle
+logs/
