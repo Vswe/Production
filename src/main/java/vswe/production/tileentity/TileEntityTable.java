@@ -4,9 +4,36 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import vswe.production.page.Page;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class TileEntityTable extends TileEntity implements IInventory {
+    private List<Page> pages;
+    private Page selectedPage;
+
+    public TileEntityTable() {
+        pages = new ArrayList<Page>();
+        pages.add(new Page("Main"));
+        pages.add(new Page("Transfer"));
+        pages.add(new Page("Upgrades"));
+        selectedPage = pages.get(0);
+    }
+
+    public List<Page> getPages() {
+        return pages;
+    }
+
+    public Page getSelectedPage() {
+        return selectedPage;
+    }
+
+    public void setSelectedPage(Page selectedPage) {
+        this.selectedPage = selectedPage;
+    }
+
     @Override
     public int getSizeInventory() {
         return 0;
