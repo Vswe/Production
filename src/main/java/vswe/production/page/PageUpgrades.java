@@ -46,4 +46,5 @@ public class PageUpgrades extends Page {
     public ItemStack getUpgradeMainItem(int id) {
         return table.getSlots().get(startId + id * SLOT_ROWS * SLOTS_PER_ROW).getStack();
     }
+
 }

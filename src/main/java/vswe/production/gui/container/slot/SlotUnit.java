@@ -15,7 +15,12 @@ public class SlotUnit extends SlotBase {
 
     @Override
     public boolean isVisible() {
-        return super.isVisible() && unit.isEnabled();
+        return super.isVisible() && isEnabled();
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return unit.isEnabled();
     }
 
     @Override
@@ -23,4 +28,10 @@ public class SlotUnit extends SlotBase {
         super.onSlotChanged();
         unit.onSlotChanged();
     }
+
+    @Override
+    public boolean canSupplyItems() {
+        return false;
+    }
+
 }

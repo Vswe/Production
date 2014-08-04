@@ -26,4 +26,10 @@ public class SlotUpgrade extends SlotBase {
     public int getTextureIndex() {
         return main == null && getHasStack() ? 2 : super.getTextureIndex();
     }
+
+    @Override
+    public void onSlotChanged() {
+        super.onSlotChanged();
+        table.onUpgradeChange();
+    }
 }

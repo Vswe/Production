@@ -51,6 +51,7 @@ public class GuiTable extends GuiBase {
         mY -= guiTop;
 
         clickPageHeader(mX, mY);
+        table.getSelectedPage().onClick(this, mX, mY, button);
     }
 
     private static final int HEADER_SRC_X = 0;

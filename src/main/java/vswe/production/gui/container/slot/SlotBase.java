@@ -8,9 +8,10 @@ import vswe.production.tileentity.TileEntityTable;
 
 public class SlotBase extends Slot {
     private Page page;
-    private TileEntityTable table;
+    protected TileEntityTable table;
     private int x;
     private int y;
+    private SlotValidity[] valid = new SlotValidity[6];
 
     public SlotBase(TileEntityTable table, Page page, int id, int x, int y) {
         super(table, id, x, y);
@@ -35,7 +36,7 @@ public class SlotBase extends Slot {
 
     @Override
     public boolean isItemValid(ItemStack itemstack) {
-        return isVisible() && isEnabled();
+        return isEnabled();
     }
 
     public boolean isVisible() {
@@ -61,4 +62,21 @@ public class SlotBase extends Slot {
     public boolean isBig() {
         return false;
     }
+
+    public SlotValidity getValid(int id) {
+        return valid[id];
+    }
+
+    public void setValid(SlotValidity valid, int id) {
+        this.valid[id] = valid;
+    }
+
+    public boolean canAcceptItems() {
+        return true;
+    }
+
+    public boolean canSupplyItems() {
+        return true;
+    }
+
 }

@@ -2,11 +2,14 @@ package vswe.production.tileentity;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityFurnace;
+import vswe.production.block.BlockTable;
 import vswe.production.gui.container.slot.SlotBase;
 import vswe.production.gui.container.slot.SlotFuel;
+import vswe.production.gui.container.slot.SlotValidity;
 import vswe.production.network.DataReader;
 import vswe.production.network.DataWriter;
 import vswe.production.network.PacketHandler;
@@ -15,13 +18,14 @@ import vswe.production.page.Page;
 import vswe.production.page.PageMain;
 import vswe.production.page.PageTransfer;
 import vswe.production.page.PageUpgrades;
+import vswe.production.page.setting.Setting;
 import vswe.production.tileentity.data.DataType;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class TileEntityTable extends TileEntity implements IInventory {
+public class TileEntityTable extends TileEntity implements IInventory, ISidedInventory {
     private List<Page> pages;
     private Page selectedPage;
     private List<SlotBase> slots;
@@ -55,6 +59,7 @@ public class TileEntityTable extends TileEntity implements IInventory {
         items = new ItemStack[slots.size()];
 
         setSelectedPage(pages.get(0));
+        reloadTransferSides();
     }
 
     public List<SlotBase> getSlots() {
@@ -145,10 +150,6 @@ public class TileEntityTable extends TileEntity implements IInventory {
         return 64;
     }
 
-    @Override
-    public boolean isItemValidForSlot(int id, ItemStack item) {
-        return slots.get(id).isItemValid(item);
-    }
 
     @Override
     public boolean isUseableByPlayer(EntityPlayer player) {
@@ -182,17 +183,21 @@ public class TileEntityTable extends TileEntity implements IInventory {
     private void sendAllDataToPlayer(EntityPlayer player) {
         DataWriter dw = PacketHandler.getWriter(this, PacketId.ALL);
         for (DataType dataType : DataType.values()) {
-            dataType.save(this, dw);
+            dataType.save(this, dw, -1);
         }
         PacketHandler.sendToPlayer(dw, player);
     }
 
     public void sendDataToAllPlayer(DataType dataType) {
-        sendToAllPlayers(getWriterForType(dataType));
+        sendDataToAllPlayer(dataType, 0);
     }
 
-    private void sendDataToAllPlayersExcept(DataType dataType, EntityPlayer ignored) {
-        sendToAllPlayersExcept(getWriterForType(dataType), ignored);
+    public void sendDataToAllPlayer(DataType dataType, int id) {
+        sendToAllPlayers(getWriterForType(dataType, id));
+    }
+
+    private void sendDataToAllPlayersExcept(DataType dataType, int id, EntityPlayer ignored) {
+        sendToAllPlayersExcept(getWriterForType(dataType, id), ignored);
     }
 
     private void sendToAllPlayers(DataWriter dw) {
@@ -214,13 +219,17 @@ public class TileEntityTable extends TileEntity implements IInventory {
     }
 
     public void updateServer(DataType dataType) {
-        PacketHandler.sendToServer(getWriterForType(dataType));
+        updateServer(dataType, 0);
     }
 
-    private DataWriter getWriterForType(DataType dataType) {
+    public void updateServer(DataType dataType, int id) {
+        PacketHandler.sendToServer(getWriterForType(dataType, id));
+    }
+
+    private DataWriter getWriterForType(DataType dataType, int id) {
         DataWriter dw = PacketHandler.getWriter(this, PacketId.TYPE);
         dw.writeEnum(dataType);
-        dataType.save(this, dw);
+        dataType.save(this, dw, id);
 
         return dw;
     }
@@ -229,9 +238,12 @@ public class TileEntityTable extends TileEntity implements IInventory {
         switch (id) {
             case TYPE:
                 DataType dataType = dr.readEnum(DataType.class);
-                dataType.load(this, dr);
-                if (dataType.shouldBounce(this)) {
-                    sendDataToAllPlayersExcept(dataType, dataType.shouldBounceToAll(this) ? null : player);
+                int index = dataType.load(this, dr, false);
+                if (index != -1 && dataType.shouldBounce(this)) {
+                    sendDataToAllPlayersExcept(dataType, index, dataType.shouldBounceToAll(this) ? null : player);
+                }
+                if (dataType == DataType.SIDE) {
+                    onSideChange();
                 }
                 break;
             case CLOSE:
@@ -244,12 +256,15 @@ public class TileEntityTable extends TileEntity implements IInventory {
         switch (id) {
             case ALL:
                 for (DataType dataType : DataType.values()) {
-                    dataType.load(this, dr);
+                    dataType.load(this, dr, true);
                 }
                 break;
             case TYPE:
                 DataType dataType = dr.readEnum(DataType.class);
-                dataType.load(this, dr);
+                dataType.load(this, dr, false);
+                if (dataType == DataType.SIDE) {
+                    onSideChange();
+                }
                 break;
         }
     }
@@ -281,4 +296,77 @@ public class TileEntityTable extends TileEntity implements IInventory {
             }
         }
     }
+
+
+    public void onUpgradeChange() {
+        reloadTransferSides();
+    }
+
+    public void onSideChange() {
+        reloadTransferSides();
+    }
+
+    private void reloadTransferSides() {
+        for (int i = 0; i < sideSlots.length; i++) {
+            for (SlotBase slot : slots) {
+                slot.setValid(SlotValidity.NONE, i);
+            }
+
+            List<SlotBase> slotsForSide = new ArrayList<SlotBase>();
+
+            for (Setting setting : getTransferPage().getSettings()) {
+                boolean isInput = setting.getSides().get(i).isInputEnabled();
+                boolean isOutput = setting.getSides().get(i).isOutputEnabled();
+
+                if (isInput || isOutput) {
+                    List<SlotBase> unitSlots = setting.getSlots();
+                    if (unitSlots != null) {
+                        slotsForSide.addAll(unitSlots);
+                        for (SlotBase unitSlot : unitSlots) {
+                            boolean isSlotInput = isInput && unitSlot.canAcceptItems();
+                            boolean isSlotOutput = isOutput && unitSlot.canSupplyItems();
+
+                            SlotValidity validity = SlotValidity.getValidity(isSlotInput, isSlotOutput);
+                            unitSlot.setValid(validity, i);
+                        }
+                    }
+                }
+            }
+
+
+            sideSlots[i] = getSlotIndexArray(slotsForSide);
+        }
+    }
+
+    private int[] getSlotIndexArray(List<SlotBase> slots) {
+        int[] result = new int[slots.size()];
+        for (int j = 0; j < slots.size(); j++) {
+            result[j] = slots.get(j).getSlotIndex();
+        }
+        return result;
+    }
+
+
+    private int[][] sideSlots = new int[6][];
+
+    @Override
+    public boolean isItemValidForSlot(int id, ItemStack item) {
+        return slots.get(id).isItemValid(item);
+    }
+
+    @Override
+    public int[] getAccessibleSlotsFromSide(int side) {
+        return sideSlots[BlockTable.getSideFromSideAndMeta(side, getBlockMetadata())];
+    }
+
+    @Override
+    public boolean canInsertItem(int slot, ItemStack item, int side) {
+        return isItemValidForSlot(slot, item) && slots.get(slot).getValid(BlockTable.getSideFromSideAndMeta(side, getBlockMetadata())).isInput();
+    }
+
+    @Override
+    public boolean canExtractItem(int slot, ItemStack item, int side) {
+        return slots.get(slot).getValid(BlockTable.getSideFromSideAndMeta(side, getBlockMetadata())).isOutput();
+    }
+
 }

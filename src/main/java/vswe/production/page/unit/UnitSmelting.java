@@ -75,12 +75,10 @@ public class UnitSmelting extends Unit {
             }
 
             if (updatedProgress) {
-                table.sendDataToAllPlayer(TYPES[this.id]);
+                table.sendDataToAllPlayer(DataType.SMELT, this.id);
             }
         }
     }
-
-    private static DataType[] TYPES = {DataType.SMELT_1, DataType.SMELT_2, DataType.SMELT_3, DataType.SMELT_4};
 
     private boolean canSmelt(ItemStack result, ItemStack output) {
         if (result != null) {

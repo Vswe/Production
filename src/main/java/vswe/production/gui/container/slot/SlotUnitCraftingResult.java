@@ -27,4 +27,16 @@ public class SlotUnitCraftingResult extends SlotUnit {
         super.onPickupFromSlot(player, item);
         ((UnitCrafting)unit).onCrafting();
     }
+
+    @Override
+    public boolean canSupplyItems() {
+        return true;
+    }
+
+    @Override
+    public boolean canAcceptItems() {
+        return false;
+    }
+
+
 }

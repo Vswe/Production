@@ -1,6 +1,6 @@
 package vswe.production.gui.container.slot;
 
-import net.minecraft.entity.player.EntityPlayer;
+
 import net.minecraft.item.ItemStack;
 import vswe.production.page.Page;
 import vswe.production.page.unit.Unit;
@@ -19,6 +19,16 @@ public class SlotUnitFurnaceResult extends SlotUnit {
 
     @Override
     public boolean isItemValid(ItemStack itemstack) {
+        return false;
+    }
+
+    @Override
+    public boolean canSupplyItems() {
+        return true;
+    }
+
+    @Override
+    public boolean canAcceptItems() {
         return false;
     }
 }

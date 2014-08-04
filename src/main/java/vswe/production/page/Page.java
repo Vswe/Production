@@ -33,6 +33,8 @@ public abstract class Page {
     public void draw(GuiBase gui, int mX, int mY) {
         gui.drawString(name, 8, 6, 0x404040);
     }
+    @SideOnly(Side.CLIENT)
+    public void onClick(GuiBase gui, int mX, int mY, int button) {}
 
     public int getId() {
         return id;
