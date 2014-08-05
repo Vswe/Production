@@ -94,13 +94,13 @@ public class ContainerTable extends Container {
             id = end - 1;
         }
 
-        SlotBase slot;
+        Slot slot;
         ItemStack slotItem;
 
         if (item.isStackable()) {
             while (item.stackSize > 0 && (!invert && id < end || invert && id >= start)) {
-                slot = (SlotBase)this.inventorySlots.get(id);
-                if (slot.isVisible()) {
+                slot = (Slot)this.inventorySlots.get(id);
+                if (!(slot instanceof SlotBase) || ((SlotBase)slot).isVisible()) {
                     slotItem = slot.getStack();
 
                     if (slotItem != null && slotItem.stackSize > 0 && slotItem.getItem() == item.getItem() && (!item.getHasSubtypes() || item.getItemDamage() == slotItem.getItemDamage()) && ItemStack.areItemStackTagsEqual(item, slotItem)) {
@@ -137,10 +137,10 @@ public class ContainerTable extends Container {
             }
 
             while (!invert && id < end || invert && id >= start){
-                slot = (SlotBase)this.inventorySlots.get(id);
+                slot = (Slot)this.inventorySlots.get(id);
                 slotItem = slot.getStack();
 
-                if (slot.isVisible()) {
+                if (!(slot instanceof SlotBase) || ((SlotBase)slot).isVisible()) {
                     if (slotItem == null && slot.isItemValid(item)) {
                         int stackSize = Math.min(slot.getSlotStackLimit(), item.stackSize);
                         ItemStack newItem = item.copy();

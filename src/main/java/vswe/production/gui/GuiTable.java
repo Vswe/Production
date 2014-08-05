@@ -54,6 +54,16 @@ public class GuiTable extends GuiBase {
         table.getSelectedPage().onClick(this, mX, mY, button);
     }
 
+    @Override
+    protected void mouseMovedOrUp(int mX, int mY, int button) {
+        super.mouseMovedOrUp(mX, mY, button);
+        mX -= guiLeft;
+        mY -= guiTop;
+
+        table.getSelectedPage().onRelease(this, mX, mY, button);
+    }
+
+
     private static final int HEADER_SRC_X = 0;
     private static final int HEADER_SRC_Y = 0;
     private static final int HEADER_FULL_WIDTH = 42;

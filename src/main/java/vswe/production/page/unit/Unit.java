@@ -37,6 +37,10 @@ public abstract class Unit {
         slots.add(slot);
     }
 
+    public int getId() {
+        return id;
+    }
+
     public abstract int createSlots(int id);
 
     public void onUpdate() {}

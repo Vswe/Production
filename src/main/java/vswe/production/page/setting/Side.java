@@ -4,13 +4,18 @@ public class Side {
     private int x;
     private int y;
     private Direction direction;
-    private boolean input;
-    private boolean output;
+    private Setting setting;
+    private Transfer input;
+    private Transfer output;
 
-    public Side(Direction direction, int x, int y) {
+    public Side(Setting setting, Direction direction, int x, int y) {
         this.x = x;
         this.y = y;
         this.direction = direction;
+        this.setting = setting;
+
+        input = new Transfer(true);
+        output = new Transfer(false);
     }
 
     public int getX() {
@@ -22,22 +27,34 @@ public class Side {
     }
 
     public boolean isOutputEnabled() {
-        return output;
+        return output.isEnabled();
     }
 
     public boolean isInputEnabled() {
-        return input;
+        return input.isEnabled();
     }
 
     public void setOutputEnabled(boolean value) {
-        output = value;
+        output.setEnabled(value);
     }
 
     public void setInputEnabled(boolean value) {
-        input = value;
+        input.setEnabled(value);
     }
 
     public Direction getDirection() {
         return direction;
+    }
+
+    public Setting getSetting() {
+        return setting;
+    }
+
+    public Transfer getOutput() {
+        return output;
+    }
+
+    public Transfer getInput() {
+        return input;
     }
 }

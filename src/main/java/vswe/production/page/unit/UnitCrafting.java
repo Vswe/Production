@@ -68,7 +68,11 @@ public class UnitCrafting extends Unit {
 
     @Override
     public void onSlotChanged() {
-        table.setInventorySlotContents(resultId, inventoryCrafting.getResult());
+        ItemStack result = inventoryCrafting.getResult();
+        if (result != null) {
+            result = result.copy();
+        }
+        table.setInventorySlotContents(resultId, result);
     }
 
 

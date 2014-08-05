@@ -66,6 +66,17 @@ public class BlockTable extends BlockContainer {
         }
     }
 
+    public static int getSideFromSideAndMetaReversed(int side, int meta) {
+        if (side <= 1) {
+            return side;
+        }else{
+            int index = SIDES_INDICES[side - 2] + meta;
+            index %= SIDES.length;
+
+            return SIDES[index] + 2;
+        }
+    }
+
     @Override
     public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
         if (!world.isRemote) {

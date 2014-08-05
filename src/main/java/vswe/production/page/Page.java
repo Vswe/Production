@@ -3,6 +3,7 @@ package vswe.production.page;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import vswe.production.gui.GuiBase;
+import vswe.production.gui.GuiTable;
 import vswe.production.gui.container.slot.SlotBase;
 import vswe.production.tileentity.TileEntityTable;
 
@@ -41,4 +42,7 @@ public abstract class Page {
     }
 
     public void onUpdate() {}
+
+    @SideOnly(Side.CLIENT)
+    public void onRelease(GuiTable gui, int mX, int mY, int button) {}
 }

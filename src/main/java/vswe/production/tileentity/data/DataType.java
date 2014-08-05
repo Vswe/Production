@@ -11,8 +11,8 @@ public enum DataType {
     PAGE(DataPage.class),
     SMELT(DataSmelting.class, 4),
     POWER(DataFuel.class),
-    SIDE(DataSide.class, DataSide.LENGTH);
-
+    SIDE_ENABLED(DataSide.Enabled.class, DataSide.LENGTH),
+    SIDE_AUTO(DataSide.Auto.class, DataSide.LENGTH);
 
     private IBitCount lengthBits;
     private int length;

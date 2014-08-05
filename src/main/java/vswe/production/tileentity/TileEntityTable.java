@@ -6,6 +6,7 @@ import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityFurnace;
+import net.minecraftforge.common.util.ForgeDirection;
 import vswe.production.block.BlockTable;
 import vswe.production.gui.container.slot.SlotBase;
 import vswe.production.gui.container.slot.SlotFuel;
@@ -19,6 +20,9 @@ import vswe.production.page.PageMain;
 import vswe.production.page.PageTransfer;
 import vswe.production.page.PageUpgrades;
 import vswe.production.page.setting.Setting;
+import vswe.production.page.setting.Side;
+import vswe.production.page.setting.Transfer;
+import vswe.production.page.unit.Unit;
 import vswe.production.tileentity.data.DataType;
 
 import java.util.ArrayList;
@@ -78,6 +82,10 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
         this.selectedPage = selectedPage;
     }
 
+    public ItemStack[] getItems() {
+        return items;
+    }
+
     @Override
     public int getSizeInventory() {
         return items.length;
@@ -102,18 +110,18 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
 
     @Override
     public ItemStack decrStackSize(int id, int count) {
-        if (items[id] != null) {
-            if (items[id].stackSize <= count) {
-                ItemStack itemstack = items[id];
-                items[id] = null;
+        ItemStack item = getStackInSlot(id);
+        if (item != null) {
+            if (item.stackSize <= count) {
+                setInventorySlotContents(id, null);
                 markDirty();
-                return itemstack;
+                return item;
             }
 
-            ItemStack result = items[id].splitStack(count);
+            ItemStack result = item.splitStack(count);
 
-            if (items[id].stackSize == 0) {
-                items[id] = null;
+            if (item.stackSize == 0) {
+                setInventorySlotContents(id, null);
             }
 
             markDirty();
@@ -242,7 +250,7 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
                 if (index != -1 && dataType.shouldBounce(this)) {
                     sendDataToAllPlayersExcept(dataType, index, dataType.shouldBounceToAll(this) ? null : player);
                 }
-                if (dataType == DataType.SIDE) {
+                if (dataType == DataType.SIDE_ENABLED) {
                     onSideChange();
                 }
                 break;
@@ -262,18 +270,136 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
             case TYPE:
                 DataType dataType = dr.readEnum(DataType.class);
                 dataType.load(this, dr, false);
-                if (dataType == DataType.SIDE) {
+                if (dataType == DataType.SIDE_ENABLED) {
                     onSideChange();
                 }
                 break;
         }
     }
 
+    private int moveTick = 0;
+    private static final int MOVE_DELAY = 20;
+
     @Override
     public void updateEntity() {
         reloadFuel();
         for (Page page : pages) {
             page.onUpdate();
+        }
+
+        if (!worldObj.isRemote && ++moveTick >= MOVE_DELAY) {
+            moveTick = 0;
+            for (Setting setting : getTransferPage().getSettings()) {
+                for (Side side : setting.getSides()) {
+                    transfer(setting, side, side.getInput());
+                    transfer(setting, side, side.getOutput());
+                }
+            }
+        }
+    }
+
+    private void transfer(Setting setting, Side side, Transfer transfer) {
+        if (transfer.isEnabled() && transfer.isAuto()) {
+            ForgeDirection direction = ForgeDirection.values()[BlockTable.getSideFromSideAndMetaReversed(side.getDirection().ordinal(), getBlockMetadata())];
+
+            TileEntity te = worldObj.getTileEntity(xCoord + direction.offsetX, yCoord + direction.offsetY, zCoord + direction.offsetZ);
+            if (te instanceof IInventory) {
+                IInventory inventory = (IInventory)te;
+
+                List<SlotBase> transferSlots = setting.getSlots();
+                int[] slots1 = new int[transferSlots.size()];
+                for (int i = 0; i < transferSlots.size(); i++) {
+                    slots1[i] = transferSlots.get(i).getSlotIndex();
+                }
+
+                int[] slots2;
+
+                ForgeDirection directionReversed = direction.getOpposite();
+                if (inventory instanceof ISidedInventory) {
+                    slots2 = ((ISidedInventory)inventory).getAccessibleSlotsFromSide(directionReversed.ordinal());
+                }else{
+                    slots2 = new int[inventory.getSizeInventory()];
+                    for (int i = 0; i < slots2.length; i++) {
+                        slots2[i] = i;
+                    }
+                }
+
+
+                if (slots2 == null ||slots2.length == 0) {
+                    return;
+                }
+
+                if (transfer.isInput()) {
+                    transfer(inventory, this, slots2, slots1, directionReversed.ordinal(), direction.ordinal(), 1);
+                }else{
+                    transfer(this, inventory, slots1, slots2, direction.ordinal(), directionReversed.ordinal(), 1);
+                }
+            }
+
+
+        }
+    }
+
+    private void transfer(IInventory from, IInventory to, int[] fromSlots, int[] toSlots, int fromSide, int toSide, int maxTransfer) {
+        ISidedInventory fromSided = from instanceof ISidedInventory ? (ISidedInventory)from : null;
+        ISidedInventory toSided = to instanceof ISidedInventory ? (ISidedInventory)to : null;
+
+        for (int fromSlot : fromSlots) {
+            ItemStack fromItem = from.getStackInSlot(fromSlot);
+            if (fromItem != null && fromItem.stackSize > 0) {
+                if (fromSided == null || fromSided.canExtractItem(fromSlot, fromItem, fromSide)) {
+                    if (fromItem.isStackable()) {
+                        for (int toSlot : toSlots) {
+                            ItemStack toItem = to.getStackInSlot(toSlot);
+                            if (toItem != null && toItem.stackSize > 0) {
+                                if (fromItem.isItemEqual(toItem) && ItemStack.areItemStackTagsEqual(toItem, fromItem)) {
+                                    int maxSize = Math.min(toItem.getMaxStackSize(), to.getInventoryStackLimit());
+                                    int maxMove = Math.min(maxSize - toItem.stackSize, Math.min(maxTransfer, fromItem.stackSize));
+
+                                    toItem.stackSize += maxMove;
+                                    maxTransfer -= maxMove;
+                                    fromItem.stackSize -= maxMove;
+                                    if (fromItem.stackSize == 0) {
+                                        from.setInventorySlotContents(fromSlot, null);
+                                    }
+
+                                    if (maxTransfer == 0) {
+                                        return;
+                                    } else if (fromItem.stackSize == 0) {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (fromItem.stackSize > 0) {
+                        for (int toSlot : toSlots) {
+                            ItemStack toItem = to.getStackInSlot(toSlot);
+                            if (toItem == null && to.isItemValidForSlot(toSlot, fromItem)) {
+                                if (toSided == null || toSided.canInsertItem(toSlot, fromItem, toSide)) {
+                                    toItem = fromItem.copy();
+                                    toItem.stackSize = Math.min(maxTransfer, fromItem.stackSize);
+                                    to.setInventorySlotContents(toSlot, toItem);
+                                    maxTransfer -= toItem.stackSize;
+                                    fromItem.stackSize -= toItem.stackSize;
+
+                                    if (fromItem.stackSize == 0) {
+                                        from.setInventorySlotContents(fromSlot, null);
+                                    }
+
+                                    if (maxTransfer == 0) {
+                                        return;
+                                    } else if (fromItem.stackSize == 0) {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
         }
     }
 

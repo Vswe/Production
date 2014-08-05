@@ -1,12 +1,16 @@
 package vswe.production.page;
 
 import vswe.production.block.ModBlocks;
+import vswe.production.gui.ArrowScroll;
+import vswe.production.gui.CheckBox;
 import vswe.production.gui.GuiBase;
+import vswe.production.gui.GuiTable;
 import vswe.production.page.setting.Direction;
 import vswe.production.page.setting.Setting;
 import vswe.production.page.setting.SettingCoal;
 import vswe.production.page.setting.SettingNormal;
 import vswe.production.page.setting.Side;
+import vswe.production.page.setting.Transfer;
 import vswe.production.tileentity.TileEntityTable;
 import vswe.production.tileentity.data.DataSide;
 import vswe.production.tileentity.data.DataType;
@@ -17,7 +21,12 @@ import java.util.List;
 
 public class PageTransfer extends Page {
     private List<Setting> settings;
-    private Setting selected;
+    private Setting selectedSetting;
+    private Side selectedSide;
+    private List<CheckBox> checkBoxes;
+    private List<ArrowScroll> arrows;
+    private boolean selectMode;
+    private Transfer selectedTransfer;
 
     public PageTransfer(TileEntityTable table, String name) {
         super(table, name);
@@ -33,9 +42,95 @@ public class PageTransfer extends Page {
 
         for (Setting setting : settings) {
             for (Direction direction : Direction.values()) {
-                setting.getSides().add(new Side(direction, SIDE_X + direction.getInterfaceX() * SIDE_OFFSET, SIDE_Y + direction.getInterfaceY() * SIDE_OFFSET));
+                setting.getSides().add(new Side(setting, direction, SIDE_X + direction.getInterfaceX() * SIDE_OFFSET, SIDE_Y + direction.getInterfaceY() * SIDE_OFFSET));
             }
         }
+
+        checkBoxes = new ArrayList<CheckBox>();
+        checkBoxes.add(new CheckBox("Select mode", 165, 10) {
+            @Override
+            public void setValue(boolean value) {
+                selectMode = value;
+            }
+
+            @Override
+            public boolean getValue() {
+                return selectMode;
+            }
+
+            @Override
+            public void onUpdate() {
+                if (!getValue()) {
+                    selectedSide = null;
+                    selectedTransfer = null;
+                }
+            }
+
+            @Override
+            public boolean isVisible() {
+                return selectedSetting != null; //TODO should also only be visible if select mode can do something (i.e. if there is a filter or an auto transfer upgrade)
+            }
+        });
+
+        checkBoxes.add(new CheckBox("Enabled", 170, 48) {
+            @Override
+            public void setValue(boolean value) {
+                selectedTransfer.setEnabled(value);
+                PageTransfer.this.table.updateServer(DataType.SIDE_ENABLED, DataSide.getId(selectedSetting, selectedSide, selectedTransfer));
+                PageTransfer.this.table.onSideChange();
+            }
+
+            @Override
+            public boolean getValue() {
+                return selectedTransfer.isEnabled();
+            }
+
+            @Override
+            public boolean isVisible() {
+                return selectedTransfer != null;
+            }
+        });
+
+        checkBoxes.add(new CheckBox("Auto transfer", 170, 58) {
+            @Override
+            public void setValue(boolean value) {
+                selectedTransfer.setAuto(value);
+                PageTransfer.this.table.updateServer(DataType.SIDE_AUTO, DataSide.getId(selectedSetting, selectedSide, selectedTransfer));
+            }
+
+            @Override
+            public boolean getValue() {
+                return selectedTransfer.isAuto();
+            }
+
+            @Override
+            public boolean isVisible() {
+                return selectedTransfer != null;
+            }
+        });
+
+        arrows = new ArrayList<ArrowScroll>();
+        arrows.add(new ArrowScroll(165, 30, 50, 2) {
+            @Override
+            public String getText() {
+                return selectedTransfer.isInput() ? "Input" : "Output";
+            }
+
+            @Override
+            public void setId(int id) {
+                selectedTransfer = id == 0 ? selectedSide.getInput() : selectedSide.getOutput();
+            }
+
+            @Override
+            public int getId() {
+                return selectedTransfer.isInput() ? 0 : 1;
+            }
+
+            @Override
+            public boolean isVisible() {
+                return selectedTransfer != null;
+            }
+        });
     }
 
 
@@ -65,10 +160,12 @@ public class PageTransfer extends Page {
         for (Setting setting : settings) {
             gui.prepare();
             boolean isValid = setting.isValid();
-            boolean isSelected = setting.equals(selected);
+            boolean isSelected = setting.equals(selectedSetting);
 
             if (isSelected && !isValid) {
-                selected = null;
+                selectedTransfer = null;
+                selectedSide = null;
+                selectedSetting = null;
             }
 
             int textureIndexX = isValid && gui.inBounds(setting.getX(), setting.getY(), SETTING_SIZE, SETTING_SIZE, mX, mY) ? 1 : 0;
@@ -79,10 +176,10 @@ public class PageTransfer extends Page {
             gui.drawItem(setting.getItem(), setting.getX() + SETTING_ITEM_OFFSET, setting.getY() + SETTING_ITEM_OFFSET);
         }
 
-        if (selected != null) {
-            for (Side side : selected.getSides()) {
+        if (selectedSetting != null) {
+            for (Side side : selectedSetting.getSides()) {
                 gui.prepare();
-                int textureIndexX = gui.inBounds(side.getX(), side.getY(), SIDE_SIZE, SIDE_SIZE, mX, mY) ? 1 : 0;
+                int textureIndexX = side.equals(selectedSide) ? 2 : gui.inBounds(side.getX(), side.getY(), SIDE_SIZE, SIDE_SIZE, mX, mY) ? 1 : 0;
                 boolean output = side.isOutputEnabled();
                 boolean input = side.isInputEnabled();
                 int textureIndexY = output && input ? 3 : output ? 2 : input ? 1 : 0;
@@ -92,6 +189,13 @@ public class PageTransfer extends Page {
                 gui.drawBlockIcon(ModBlocks.table.getIcon(side.getDirection().ordinal(), 0), side.getX() + SIDE_ITEM_OFFSET, side.getY() + SIDE_ITEM_OFFSET);
             }
         }
+
+        for (CheckBox checkBox : checkBoxes) {
+            checkBox.draw(gui, mX, mY);
+        }
+        for (ArrowScroll arrow : arrows) {
+            arrow.draw(gui, mX, mY);
+        }
     }
 
     @Override
@@ -99,40 +203,87 @@ public class PageTransfer extends Page {
         for (Setting setting : settings) {
             if (gui.inBounds(setting.getX(), setting.getY(), SETTING_SIZE, SETTING_SIZE, mX, mY)) {
                 if (setting.isValid()) {
-                    if (setting.equals(selected)) {
-                        selected = null;
+                    if (setting.equals(selectedSetting)) {
+                        selectedSetting = null;
+                        selectedSide = null;
+                        selectedTransfer = null;
                     }else{
-                        selected = setting;
+                        if (selectedSide != null) {
+                            Side side = setting.getSides().get(selectedSide.getDirection().ordinal());
+                            if (selectedTransfer == null) {
+                                selectedTransfer = side.getInput();
+                            }else{
+                                selectedTransfer = selectedTransfer.isInput() ? side.getInput() : side.getOutput();
+                            }
+                            selectedSide = side;
+                        }
+                        selectedSetting = setting;
                     }
+                    selectedSide = null;
                 }
 
                 break;
             }
         }
 
-        if (selected != null) {
-            for (Side side : selected.getSides()) {
+        if (selectedSetting != null) {
+            for (Side side : selectedSetting.getSides()) {
                 if (gui.inBounds(side.getX(), side.getY(), SIDE_SIZE, SIDE_SIZE, mX, mY)) {
-                    boolean input = side.isInputEnabled();
-                    boolean output = side.isOutputEnabled();
+                    if (selectMode) {
+                        if (side.equals(selectedSide)) {
+                            selectedSide = null;
+                            selectedTransfer = null;
+                        }else{
+                            if (selectedTransfer == null) {
+                                selectedTransfer = side.getInput();
+                            }else{
+                                selectedTransfer = selectedTransfer.isInput() ? side.getInput() : side.getOutput();
+                            }
+                            selectedSide = side;
+                        }
 
-                    int id = (output ? 2 : 0) + (input ? 1 : 0);
-                    id += button == 0 ? 1 : -1;
-                    if (id < 0) {
-                        id += 4;
                     }else{
-                        id %= 4;
+                        boolean input = side.isInputEnabled();
+                        boolean output = side.isOutputEnabled();
+
+                        int id = (output ? 2 : 0) + (input ? 1 : 0);
+                        id += button == 0 ? 1 : -1;
+                        if (id < 0) {
+                            id += 4;
+                        }else{
+                            id %= 4;
+                        }
+
+                        boolean newInput = (id & 1) != 0;
+                        boolean newOutput = (id & 2) != 0;
+                        if (newInput != input) {
+                            side.setInputEnabled(newInput);
+                            table.updateServer(DataType.SIDE_ENABLED, DataSide.getId(selectedSetting, side, side.getInput()));
+                        }
+                        if (newOutput != output) {
+                            side.setOutputEnabled(newOutput);
+                            table.updateServer(DataType.SIDE_ENABLED, DataSide.getId(selectedSetting, side, side.getOutput()));
+                        }
+
+                        table.onSideChange();
                     }
-
-                    side.setInputEnabled((id & 1) != 0);
-                    side.setOutputEnabled((id & 2) != 0);
-
-                    table.updateServer(DataType.SIDE, DataSide.getId(selected, side));
-                    table.onSideChange();
-
                     break;
                 }
             }
+        }
+
+        for (CheckBox checkBox : checkBoxes) {
+            checkBox.onClick(gui, mX, mY);
+        }
+        for (ArrowScroll arrow : arrows) {
+            arrow.onClick(gui, mX, mY);
+        }
+    }
+
+    @Override
+    public void onRelease(GuiTable gui, int mX, int mY, int button) {
+        for (ArrowScroll arrow : arrows) {
+            arrow.onRelease();
         }
     }
 
