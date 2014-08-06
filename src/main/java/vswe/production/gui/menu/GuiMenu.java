@@ -53,6 +53,11 @@ public abstract class GuiMenu {
 
     }
 
+    @SideOnly(Side.CLIENT)
+    public void onKeyStroke(GuiBase gui, char c, int k) {
+
+    }
+
     protected abstract void save();
 
     protected void close() {

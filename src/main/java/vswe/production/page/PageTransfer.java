@@ -99,7 +99,7 @@ public class PageTransfer extends Page {
             @Override
             public void setValue(boolean value) {
                 selectedTransfer.setAuto(value);
-                PageTransfer.this.table.updateServer(DataType.SIDE_AUTO, DataSide.getId(selectedSetting, selectedSide, selectedTransfer));
+                PageTransfer.this.table.updateServer(DataType.SIDE_AUTO, getSyncId());
             }
 
             @Override
@@ -114,7 +114,7 @@ public class PageTransfer extends Page {
         });
 
         arrows = new ArrayList<ArrowScroll>();
-        arrows.add(new ArrowScroll(165, 40, 50, 2) {
+        arrows.add(new ArrowScroll(165, 40, 50) {
             @Override
             public String getText() {
                 return selectedTransfer.isInput() ? "Input" : "Output";
@@ -134,9 +134,14 @@ public class PageTransfer extends Page {
             public boolean isVisible() {
                 return selectedTransfer != null;
             }
+
+            @Override
+            protected int getLength() {
+                return 2;
+            }
         });
 
-        arrows.add(new ArrowScroll(10, 112, 80, 2) {
+        arrows.add(new ArrowScroll(10, 112, 80) {
             @Override
             public String getText() {
                 return selectedTransfer.hasWhiteList() ? "Use white list" : "Use black list";
@@ -159,11 +164,24 @@ public class PageTransfer extends Page {
 
             @Override
             public void onUpdate() {
-                PageTransfer.this.table.updateServer(DataType.SIDE_WHITE_LIST, DataSide.getId(selectedSetting, selectedSide, selectedTransfer));
+                PageTransfer.this.table.updateServer(DataType.SIDE_WHITE_LIST, getSyncId());
             }
+
+            @Override
+            protected int getLength() {
+                return 2;
+            }
+
         });
     }
 
+    public int getSyncId() {
+        return DataSide.getId(selectedSetting, selectedSide, selectedTransfer);
+    }
+
+    public int getSyncId(ItemSetting itemSetting) {
+        return DataSide.FilterBase.getId(selectedSetting, selectedSide, selectedTransfer, itemSetting);
+    }
 
     private static final int SIDE_X = 75;
     private static final int SIDE_Y = 15;
@@ -185,9 +203,7 @@ public class PageTransfer extends Page {
     private static final int ITEM_Y = 125;
     private static final int ITEM_OFFSET = 20;
     private static final int ITEM_SIZE = 18;
-    private static final int ITEM_SRC_X = 68;
-    private static final int ITEM_SRC_Y = 62;
-    private static final int ITEM_ITEM_OFFSET = 1;
+
 
     @Override
     public int createSlots(int id) {
@@ -239,12 +255,7 @@ public class PageTransfer extends Page {
                     ItemStack item = setting != null ? setting.getItem() : null;
                     int x = ITEM_X + i * ITEM_OFFSET;
 
-                    int textureIndexX = gui.inBounds(x, ITEM_Y, ITEM_SIZE, ITEM_SIZE, mX, mY) ? 1 : 0;
-                    int textureIndexY = item != null ? 1 : 0;
-
-
-                    gui.drawRect(x, ITEM_Y, ITEM_SRC_X + textureIndexX * ITEM_SIZE, ITEM_SRC_Y + textureIndexY * ITEM_SIZE, ITEM_SIZE, ITEM_SIZE);
-                    gui.drawItem(item, x + ITEM_ITEM_OFFSET, ITEM_Y + ITEM_ITEM_OFFSET);
+                    gui.drawItemWithBackground(item, x, ITEM_Y, mX, mY);
                 }
             }
         }
@@ -336,7 +347,7 @@ public class PageTransfer extends Page {
                             itemStack = itemStack.copy();
                             itemStack.stackSize = 1;
                             selectedTransfer.getItem(i).setItem(itemStack);
-                            table.updateServer(DataType.SIDE_FILTER, DataSide.Filter.getId(selectedSetting, selectedSide, selectedTransfer, selectedTransfer.getItem(i)));
+                            table.updateServer(DataType.SIDE_FILTER, getSyncId(selectedTransfer.getItem(i)));
                         }
 
                         break;

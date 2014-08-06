@@ -85,6 +85,18 @@ public class GuiTable extends GuiBase {
 
     }
 
+    @Override
+    protected void keyTyped(char c, int k) {
+        if (table.getMenu() == null) {
+            super.keyTyped(c, k);
+        }else{
+            if (k == 1) {
+                this.mc.thePlayer.closeScreen();
+            }else{
+                table.getMenu().onKeyStroke(this, c, k);
+            }
+        }
+    }
 
     private static final int HEADER_SRC_X = 0;
     private static final int HEADER_SRC_Y = 0;

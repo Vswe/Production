@@ -9,7 +9,6 @@ public abstract class ArrowScroll {
 
     private int x;
     private int y;
-    private int length;
     private int width;
     private boolean clicked;
 
@@ -22,11 +21,10 @@ public abstract class ArrowScroll {
     private static final int TEXT_Y = 3;
 
 
-    public ArrowScroll(int x, int y, int width, int length) {
+    public ArrowScroll(int x, int y, int width) {
         this.x = x;
         this.y = y;
         this.width = width;
-        this.length = length;
     }
 
     @SideOnly(Side.CLIENT)
@@ -71,7 +69,7 @@ public abstract class ArrowScroll {
             int id = getId();
             id--;
             if (id < 0) {
-                id = length - 1;
+                id = getLength() - 1;
             }
             clicked = true;
             setId(id);
@@ -80,7 +78,7 @@ public abstract class ArrowScroll {
         }else if(inArrowBounds(gui, mX, mY, false)) {
             int id = getId();
             id++;
-            if (id >= length) {
+            if (id >= getLength()) {
                 id = 0;
             }
             clicked = true;
@@ -88,6 +86,8 @@ public abstract class ArrowScroll {
             onUpdate();
         }
     }
+
+
 
     @SideOnly(Side.CLIENT)
     public void onRelease() {
@@ -97,4 +97,5 @@ public abstract class ArrowScroll {
     public abstract String getText();
     public abstract void setId(int id);
     public abstract int getId();
+    protected abstract int getLength();
 }

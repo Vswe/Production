@@ -10,6 +10,7 @@ import vswe.production.page.setting.ItemSetting;
 import vswe.production.page.setting.Setting;
 import vswe.production.page.setting.Side;
 import vswe.production.page.setting.Transfer;
+import vswe.production.page.setting.TransferMode;
 import vswe.production.tileentity.TileEntityTable;
 
 
@@ -75,17 +76,19 @@ public abstract class DataSide extends DataBase {
         }
     }
 
-    public static class Filter extends DataSide {
+    public static abstract class FilterBase extends DataSide {
         public static final int LENGTH = DataSide.LENGTH * ItemSetting.ITEM_COUNT;
 
-        private ItemSetting getSetting(TileEntityTable table, int id) {
+        protected ItemSetting getSetting(TileEntityTable table, int id) {
             return getTransfer(table, id / ItemSetting.ITEM_COUNT).getItem(id % ItemSetting.ITEM_COUNT);
         }
 
         public static int getId(Setting setting, Side side, Transfer transfer, ItemSetting itemSetting) {
             return getId(setting, side, transfer) * ItemSetting.ITEM_COUNT + itemSetting.getId();
         }
+    }
 
+    public static class Filter extends FilterBase {
         @Override
         public void save(TileEntityTable table, DataWriter dw, int id) {
             ItemSetting setting = getSetting(table, id);
@@ -114,6 +117,18 @@ public abstract class DataSide extends DataBase {
             }else{
                 setting.setItem(null);
             }
+        }
+    }
+
+    public static class FilterMode extends FilterBase {
+        @Override
+        public void save(TileEntityTable table, DataWriter dw, int id) {
+            dw.writeEnum(getSetting(table, id).getMode());
+        }
+
+        @Override
+        public void load(TileEntityTable table, DataReader dr, int id) {
+            getSetting(table, id).setMode(dr.readEnum(TransferMode.class));
         }
     }
 }

@@ -5,25 +5,25 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 
 public enum  TransferMode {
-    PRECISE {
+    PRECISE("Precise detection") {
         @Override
         public boolean isMatch(ItemStack item1, ItemStack item2) {
             return item1.getItem() == item2.getItem() && item1.getItemDamage() == item2.getItemDamage() && ItemStack.areItemStackTagsEqual(item1, item2);
         }
     },
-    NBT_INDEPENDENT {
+    NBT_INDEPENDENT("NBT independent detection") {
         @Override
         public boolean isMatch(ItemStack item1, ItemStack item2) {
             return item1.getItem() == item2.getItem() && item1.getItemDamage() == item2.getItemDamage();
         }
     },
-    FUZZY {
+    FUZZY("Fuzzy detection") {
         @Override
         public boolean isMatch(ItemStack item1, ItemStack item2) {
             return item1.getItem() == item2.getItem();
         }
     },
-    ORE_DICTIONARY {
+    ORE_DICTIONARY("Ore dictionary detection") {
         @Override
         public boolean isMatch(ItemStack item1, ItemStack item2) {
             int[] ids1 = OreDictionary.getOreIDs(item1);
@@ -42,6 +42,17 @@ public enum  TransferMode {
             }
         }
     };
+
+    private String name;
+
+    TransferMode(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 
     public abstract boolean isMatch(ItemStack item1, ItemStack item2);
 }

@@ -18,7 +18,7 @@ public abstract class Button {
     }
 
     private static final int WIDTH = 42;
-    private static final int HEIGHT = 17;
+    private static final int HEIGHT = 16;
     private static final int SRC_X = 42;
     private static final int SRC_Y = 44;
     private static final int TEXT_Y = 7;
