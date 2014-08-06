@@ -11,6 +11,8 @@ import vswe.production.block.BlockTable;
 import vswe.production.gui.container.slot.SlotBase;
 import vswe.production.gui.container.slot.SlotFuel;
 import vswe.production.gui.container.slot.SlotValidity;
+import vswe.production.gui.menu.GuiMenu;
+import vswe.production.gui.menu.GuiMenuItem;
 import vswe.production.network.DataReader;
 import vswe.production.network.DataWriter;
 import vswe.production.network.PacketHandler;
@@ -22,8 +24,7 @@ import vswe.production.page.PageUpgrades;
 import vswe.production.page.setting.Setting;
 import vswe.production.page.setting.Side;
 import vswe.production.page.setting.Transfer;
-import vswe.production.page.unit.Unit;
-import vswe.production.tileentity.data.DataType;
+import vswe.production.network.data.DataType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,8 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
     private Page selectedPage;
     private List<SlotBase> slots;
     private ItemStack[] items;
+
+    private GuiMenu menu;
 
     private int power;
     public static final int MAX_POWER = 20000;
@@ -352,21 +355,23 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
                         for (int toSlot : toSlots) {
                             ItemStack toItem = to.getStackInSlot(toSlot);
                             if (toItem != null && toItem.stackSize > 0) {
-                                if (fromItem.isItemEqual(toItem) && ItemStack.areItemStackTagsEqual(toItem, fromItem)) {
-                                    int maxSize = Math.min(toItem.getMaxStackSize(), to.getInventoryStackLimit());
-                                    int maxMove = Math.min(maxSize - toItem.stackSize, Math.min(maxTransfer, fromItem.stackSize));
+                                if (toSided == null || toSided.canInsertItem(toSlot, fromItem, toSide)) {
+                                    if (fromItem.isItemEqual(toItem) && ItemStack.areItemStackTagsEqual(toItem, fromItem)) {
+                                        int maxSize = Math.min(toItem.getMaxStackSize(), to.getInventoryStackLimit());
+                                        int maxMove = Math.min(maxSize - toItem.stackSize, Math.min(maxTransfer, fromItem.stackSize));
 
-                                    toItem.stackSize += maxMove;
-                                    maxTransfer -= maxMove;
-                                    fromItem.stackSize -= maxMove;
-                                    if (fromItem.stackSize == 0) {
-                                        from.setInventorySlotContents(fromSlot, null);
-                                    }
+                                        toItem.stackSize += maxMove;
+                                        maxTransfer -= maxMove;
+                                        fromItem.stackSize -= maxMove;
+                                        if (fromItem.stackSize == 0) {
+                                            from.setInventorySlotContents(fromSlot, null);
+                                        }
 
-                                    if (maxTransfer == 0) {
-                                        return;
-                                    } else if (fromItem.stackSize == 0) {
-                                        break;
+                                        if (maxTransfer == 0) {
+                                            return;
+                                        } else if (fromItem.stackSize == 0) {
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -435,25 +440,24 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
     private void reloadTransferSides() {
         for (int i = 0; i < sideSlots.length; i++) {
             for (SlotBase slot : slots) {
-                slot.setValid(SlotValidity.NONE, i);
+                slot.resetValidity(i);
             }
 
             List<SlotBase> slotsForSide = new ArrayList<SlotBase>();
 
             for (Setting setting : getTransferPage().getSettings()) {
-                boolean isInput = setting.getSides().get(i).isInputEnabled();
-                boolean isOutput = setting.getSides().get(i).isOutputEnabled();
+                Transfer input = setting.getSides().get(i).getInput();
+                Transfer output = setting.getSides().get(i).getOutput();
 
-                if (isInput || isOutput) {
+                if (input.isEnabled() || output.isEnabled()) {
                     List<SlotBase> unitSlots = setting.getSlots();
                     if (unitSlots != null) {
                         slotsForSide.addAll(unitSlots);
                         for (SlotBase unitSlot : unitSlots) {
-                            boolean isSlotInput = isInput && unitSlot.canAcceptItems();
-                            boolean isSlotOutput = isOutput && unitSlot.canSupplyItems();
+                            boolean isSlotInput = input.isEnabled() && unitSlot.canAcceptItems();
+                            boolean isSlotOutput = output.isEnabled() && unitSlot.canSupplyItems();
 
-                            SlotValidity validity = SlotValidity.getValidity(isSlotInput, isSlotOutput);
-                            unitSlot.setValid(validity, i);
+                            unitSlot.setValidity(i, isSlotInput ? input : null, isSlotOutput ? output : null);
                         }
                     }
                 }
@@ -482,17 +486,29 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
 
     @Override
     public int[] getAccessibleSlotsFromSide(int side) {
-        return sideSlots[BlockTable.getSideFromSideAndMeta(side, getBlockMetadata())];
+        return sideSlots[getTransferSide(side)];
     }
 
     @Override
     public boolean canInsertItem(int slot, ItemStack item, int side) {
-        return isItemValidForSlot(slot, item) && slots.get(slot).getValid(BlockTable.getSideFromSideAndMeta(side, getBlockMetadata())).isInput();
+        return isItemValidForSlot(slot, item) && slots.get(slot).isInputValid(getTransferSide(side), item);
     }
 
     @Override
     public boolean canExtractItem(int slot, ItemStack item, int side) {
-        return slots.get(slot).getValid(BlockTable.getSideFromSideAndMeta(side, getBlockMetadata())).isOutput();
+        return slots.get(slot).isOutputValid(getTransferSide(side), item);
     }
 
+
+    private int getTransferSide(int side) {
+        return BlockTable.getSideFromSideAndMeta(side, getBlockMetadata());
+    }
+
+    public GuiMenu getMenu() {
+        return menu;
+    }
+
+    public void setMenu(GuiMenuItem menu) {
+        this.menu = menu;
+    }
 }

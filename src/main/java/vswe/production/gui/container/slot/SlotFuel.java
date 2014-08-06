@@ -6,7 +6,7 @@ import net.minecraft.tileentity.TileEntityFurnace;
 import vswe.production.page.Page;
 import vswe.production.tileentity.TileEntityTable;
 
-public class SlotFuel extends SlotBase {
+public class SlotFuel extends SlotTable {
     public SlotFuel(TileEntityTable table, Page page, int id, int x, int y) {
         super(table, page, id, x, y);
     }

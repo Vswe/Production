@@ -1,17 +1,42 @@
 package vswe.production.gui;
 
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.inventory.Container;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
 
 public abstract class GuiBase extends GuiContainer {
     public GuiBase(Container container) {
         super(container);
+    }
+
+    private Slot selectedSlot;
+    public boolean shiftMoveRendered;
+
+    @Override
+    public void drawScreen(int x, int y, float f) {
+        selectedSlot = null;
+        shiftMoveRendered = false;
+        for (Object obj : inventorySlots.inventorySlots) {
+            Slot slot = (Slot)obj;
+            if (func_146978_c(slot.xDisplayPosition, slot.yDisplayPosition, 16, 16, x, y)) {
+                selectedSlot = slot;
+                break;
+            }
+        }
+
+        super.drawScreen(x, y, f);
+    }
+
+    public Slot getSelectedSlot() {
+        return selectedSlot;
     }
 
     protected static final ResourceLocation BACKGROUND = new ResourceLocation("production", "textures/gui/background.png");
@@ -48,6 +73,10 @@ public abstract class GuiBase extends GuiContainer {
     }
 
     public void drawItem(ItemStack item, int x, int y) {
+        RenderHelper.enableGUIStandardItemLighting();
+        GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+        GL11.glEnable(GL11.GL_COLOR_MATERIAL);
+        GL11.glEnable(GL11.GL_LIGHTING);
         itemRender.renderItemAndEffectIntoGUI(fontRendererObj, mc.getTextureManager(), item, x, y);
     }
 

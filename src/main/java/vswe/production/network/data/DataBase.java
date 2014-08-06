@@ -1,4 +1,4 @@
-package vswe.production.tileentity.data;
+package vswe.production.network.data;
 
 
 import vswe.production.network.DataReader;

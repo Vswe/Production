@@ -5,7 +5,7 @@ import vswe.production.page.unit.Unit;
 import vswe.production.tileentity.TileEntityTable;
 
 
-public class SlotUnit extends SlotBase {
+public class SlotUnit extends SlotTable {
     protected Unit unit;
     public SlotUnit(TileEntityTable table, Page page, int id, int x, int y, Unit unit) {
         super(table, page, id, x, y);

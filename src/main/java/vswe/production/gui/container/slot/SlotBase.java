@@ -1,27 +1,27 @@
 package vswe.production.gui.container.slot;
 
+import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import vswe.production.gui.GuiBase;
 import vswe.production.page.Page;
+import vswe.production.page.setting.Transfer;
 import vswe.production.tileentity.TileEntityTable;
 
 
 public class SlotBase extends Slot {
-    private Page page;
-    protected TileEntityTable table;
     private int x;
     private int y;
-    private SlotValidity[] valid = new SlotValidity[6];
+    private Transfer[] input = new Transfer[6];
+    private Transfer[] output = new Transfer[6];
+    protected TileEntityTable table;
 
-    public SlotBase(TileEntityTable table, Page page, int id, int x, int y) {
-        super(table, id, x, y);
-        this.table = table;
-        this.page = page;
+    public SlotBase(IInventory inventory, TileEntityTable table, int id, int x, int y) {
+        super(inventory, id, x, y);
 
         this.x = x;
         this.y = y;
-
-        update(isVisible());
+        this.table = table;
     }
 
     public void update(boolean visible) {
@@ -40,7 +40,7 @@ public class SlotBase extends Slot {
     }
 
     public boolean isVisible() {
-        return page == null || page.equals(table.getSelectedPage());
+        return table.getMenu() == null;
     }
 
     public boolean isEnabled() {
@@ -55,7 +55,7 @@ public class SlotBase extends Slot {
         return y;
     }
 
-    public int getTextureIndex() {
+    public int getTextureIndex(GuiBase gui) {
         return isEnabled() ? 0 : 1;
     }
 
@@ -63,12 +63,22 @@ public class SlotBase extends Slot {
         return false;
     }
 
-    public SlotValidity getValid(int id) {
-        return valid[id];
+    public boolean isOutputValid(int id, ItemStack item) {
+        return output[id] != null && output[id].isValid(item);
     }
 
-    public void setValid(SlotValidity valid, int id) {
-        this.valid[id] = valid;
+    public boolean isInputValid(int id, ItemStack item) {
+        return input[id] != null && input[id].isValid(item);
+    }
+
+    public void resetValidity(int id) {
+        this.output[id] = null;
+        this.input[id] = null;
+    }
+
+    public void setValidity(int id, Transfer input, Transfer output) {
+        this.output[id] = output;
+        this.input[id] = input;
     }
 
     public boolean canAcceptItems() {

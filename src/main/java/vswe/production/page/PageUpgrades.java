@@ -1,7 +1,6 @@
 package vswe.production.page;
 
 import net.minecraft.item.ItemStack;
-import vswe.production.gui.container.slot.SlotBase;
 import vswe.production.gui.container.slot.SlotUpgrade;
 import vswe.production.tileentity.TileEntityTable;
 

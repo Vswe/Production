@@ -1,8 +1,9 @@
-package vswe.production.gui;
+package vswe.production.gui.component;
 
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import vswe.production.gui.GuiBase;
 
 public abstract class CheckBox {
 

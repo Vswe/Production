@@ -7,11 +7,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import vswe.production.gui.GuiBase;
 import vswe.production.gui.container.slot.SlotUnit;
+import vswe.production.gui.container.slot.SlotUnitFurnaceInput;
 import vswe.production.gui.container.slot.SlotUnitFurnaceResult;
 import vswe.production.page.Page;
 import vswe.production.tileentity.TileEntityTable;
-import vswe.production.tileentity.data.DataSmelting;
-import vswe.production.tileentity.data.DataType;
+import vswe.production.network.data.DataType;
 
 public class UnitSmelting extends Unit {
 
@@ -30,7 +30,7 @@ public class UnitSmelting extends Unit {
     @Override
     public int createSlots(int id) {
         inputId = id;
-        addSlot(new SlotUnit(table, page, id++, this.x + START_X, this.y + START_Y, this));
+        addSlot(new SlotUnitFurnaceInput(table, page, id++, this.x + START_X, this.y + START_Y, this));
         outputId = id;
         addSlot(new SlotUnitFurnaceResult(table, page, id++, this.x + START_X + RESULT_X, this.y + START_Y, this));
 

@@ -1,19 +1,23 @@
 package vswe.production.page;
 
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import vswe.production.block.ModBlocks;
-import vswe.production.gui.ArrowScroll;
-import vswe.production.gui.CheckBox;
+import vswe.production.gui.component.ArrowScroll;
+import vswe.production.gui.component.CheckBox;
 import vswe.production.gui.GuiBase;
 import vswe.production.gui.GuiTable;
+import vswe.production.gui.menu.GuiMenuItem;
 import vswe.production.page.setting.Direction;
+import vswe.production.page.setting.ItemSetting;
 import vswe.production.page.setting.Setting;
 import vswe.production.page.setting.SettingCoal;
 import vswe.production.page.setting.SettingNormal;
 import vswe.production.page.setting.Side;
 import vswe.production.page.setting.Transfer;
 import vswe.production.tileentity.TileEntityTable;
-import vswe.production.tileentity.data.DataSide;
-import vswe.production.tileentity.data.DataType;
+import vswe.production.network.data.DataSide;
+import vswe.production.network.data.DataType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +51,7 @@ public class PageTransfer extends Page {
         }
 
         checkBoxes = new ArrayList<CheckBox>();
-        checkBoxes.add(new CheckBox("Select mode", 165, 10) {
+        checkBoxes.add(new CheckBox("Select mode", 165, 20) {
             @Override
             public void setValue(boolean value) {
                 selectMode = value;
@@ -72,7 +76,7 @@ public class PageTransfer extends Page {
             }
         });
 
-        checkBoxes.add(new CheckBox("Enabled", 170, 48) {
+        checkBoxes.add(new CheckBox("Enabled", 170, 58) {
             @Override
             public void setValue(boolean value) {
                 selectedTransfer.setEnabled(value);
@@ -91,7 +95,7 @@ public class PageTransfer extends Page {
             }
         });
 
-        checkBoxes.add(new CheckBox("Auto transfer", 170, 58) {
+        checkBoxes.add(new CheckBox("Auto transfer", 170, 68) {
             @Override
             public void setValue(boolean value) {
                 selectedTransfer.setAuto(value);
@@ -110,7 +114,7 @@ public class PageTransfer extends Page {
         });
 
         arrows = new ArrayList<ArrowScroll>();
-        arrows.add(new ArrowScroll(165, 30, 50, 2) {
+        arrows.add(new ArrowScroll(165, 40, 50, 2) {
             @Override
             public String getText() {
                 return selectedTransfer.isInput() ? "Input" : "Output";
@@ -131,11 +135,38 @@ public class PageTransfer extends Page {
                 return selectedTransfer != null;
             }
         });
+
+        arrows.add(new ArrowScroll(10, 112, 80, 2) {
+            @Override
+            public String getText() {
+                return selectedTransfer.hasWhiteList() ? "Use white list" : "Use black list";
+            }
+
+            @Override
+            public void setId(int id) {
+                selectedTransfer.setUseWhiteList(id == 0);
+            }
+
+            @Override
+            public int getId() {
+                return selectedTransfer.hasWhiteList() ? 0 : 1;
+            }
+
+            @Override
+            public boolean isVisible() {
+                return selectedTransfer != null;
+            }
+
+            @Override
+            public void onUpdate() {
+                PageTransfer.this.table.updateServer(DataType.SIDE_WHITE_LIST, DataSide.getId(selectedSetting, selectedSide, selectedTransfer));
+            }
+        });
     }
 
 
     private static final int SIDE_X = 75;
-    private static final int SIDE_Y = 5;
+    private static final int SIDE_Y = 15;
     private static final int SIDE_OFFSET = 20;
     private static final int SIDE_SIZE = 18;
     private static final int SIDE_SRC_X = 0;
@@ -143,12 +174,20 @@ public class PageTransfer extends Page {
     private static final int SIDE_ITEM_OFFSET = 1;
 
     private static final int SETTING_X = 5;
-    private static final int SETTING_Y = 15;
+    private static final int SETTING_Y = 25;
     private static final int SETTING_OFFSET = 20;
     private static final int SETTING_SIZE = 18;
     private static final int SETTING_SRC_X = 0;
     private static final int SETTING_SRC_Y = 112;
     private static final int SETTING_ITEM_OFFSET = 1;
+
+    private static final int ITEM_X = 10;
+    private static final int ITEM_Y = 125;
+    private static final int ITEM_OFFSET = 20;
+    private static final int ITEM_SIZE = 18;
+    private static final int ITEM_SRC_X = 68;
+    private static final int ITEM_SRC_Y = 62;
+    private static final int ITEM_ITEM_OFFSET = 1;
 
     @Override
     public int createSlots(int id) {
@@ -157,6 +196,8 @@ public class PageTransfer extends Page {
 
     @Override
     public void draw(GuiBase gui, int mX, int mY) {
+        super.draw(gui, mX, mY);
+
         for (Setting setting : settings) {
             gui.prepare();
             boolean isValid = setting.isValid();
@@ -188,6 +229,24 @@ public class PageTransfer extends Page {
                 gui.drawRect(side.getX(), side.getY(), SIDE_SRC_X + textureIndexX * SIDE_SIZE, SIDE_SRC_Y + textureIndexY * SIDE_SIZE, SIDE_SIZE, SIDE_SIZE);
                 gui.drawBlockIcon(ModBlocks.table.getIcon(side.getDirection().ordinal(), 0), side.getX() + SIDE_ITEM_OFFSET, side.getY() + SIDE_ITEM_OFFSET);
             }
+
+            if (selectedTransfer != null) {
+                gui.drawString("Filter", 8, 100, 0x404040);
+
+                for (int i = 0; i < ItemSetting.ITEM_COUNT; i++) {
+                    gui.prepare();
+                    ItemSetting setting = selectedTransfer.getItem(i);
+                    ItemStack item = setting != null ? setting.getItem() : null;
+                    int x = ITEM_X + i * ITEM_OFFSET;
+
+                    int textureIndexX = gui.inBounds(x, ITEM_Y, ITEM_SIZE, ITEM_SIZE, mX, mY) ? 1 : 0;
+                    int textureIndexY = item != null ? 1 : 0;
+
+
+                    gui.drawRect(x, ITEM_Y, ITEM_SRC_X + textureIndexX * ITEM_SIZE, ITEM_SRC_Y + textureIndexY * ITEM_SIZE, ITEM_SIZE, ITEM_SIZE);
+                    gui.drawItem(item, x + ITEM_ITEM_OFFSET, ITEM_Y + ITEM_ITEM_OFFSET);
+                }
+            }
         }
 
         for (CheckBox checkBox : checkBoxes) {
@@ -210,16 +269,11 @@ public class PageTransfer extends Page {
                     }else{
                         if (selectedSide != null) {
                             Side side = setting.getSides().get(selectedSide.getDirection().ordinal());
-                            if (selectedTransfer == null) {
-                                selectedTransfer = side.getInput();
-                            }else{
-                                selectedTransfer = selectedTransfer.isInput() ? side.getInput() : side.getOutput();
-                            }
+                            selectedTransfer = selectedTransfer.isInput() ? side.getInput() : side.getOutput();
                             selectedSide = side;
                         }
                         selectedSetting = setting;
                     }
-                    selectedSide = null;
                 }
 
                 break;
@@ -270,6 +324,25 @@ public class PageTransfer extends Page {
                     break;
                 }
             }
+
+            if(selectedTransfer != null) {
+                for (int i = 0; i < ItemSetting.ITEM_COUNT; i++) {
+                    if (gui.inBounds(ITEM_X + i * ITEM_OFFSET, ITEM_Y, ITEM_SIZE, ITEM_SIZE, mX, mY)) {
+                        EntityPlayer player = gui.mc.thePlayer;
+                        ItemStack itemStack = player.inventory.getItemStack();
+                        if (itemStack == null) {
+                            table.setMenu(new GuiMenuItem(table, selectedTransfer.getItem(i)));
+                        }else{
+                            itemStack = itemStack.copy();
+                            itemStack.stackSize = 1;
+                            selectedTransfer.getItem(i).setItem(itemStack);
+                            table.updateServer(DataType.SIDE_FILTER, DataSide.Filter.getId(selectedSetting, selectedSide, selectedTransfer, selectedTransfer.getItem(i)));
+                        }
+
+                        break;
+                    }
+                }
+            }
         }
 
         for (CheckBox checkBox : checkBoxes) {
@@ -278,6 +351,8 @@ public class PageTransfer extends Page {
         for (ArrowScroll arrow : arrows) {
             arrow.onClick(gui, mX, mY);
         }
+
+
     }
 
     @Override

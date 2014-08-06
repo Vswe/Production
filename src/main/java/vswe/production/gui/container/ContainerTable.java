@@ -8,6 +8,7 @@ import net.minecraft.inventory.ICrafting;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import vswe.production.gui.container.slot.SlotBase;
+import vswe.production.gui.container.slot.SlotPlayer;
 import vswe.production.tileentity.TileEntityTable;
 
 public class ContainerTable extends Container {
@@ -23,12 +24,12 @@ public class ContainerTable extends Container {
         InventoryPlayer inventory = player.inventory;
         for (int y = 0; y < NORMAL_ROWS; y++) {
             for (int x = 0; x < SLOTS_PER_ROW; x++) {
-                addSlotToContainer(new Slot(inventory, x + y * SLOTS_PER_ROW + SLOTS_PER_ROW, PLAYER_X + x * SLOT_SIZE, y * SLOT_SIZE + PLAYER_Y));
+                addSlotToContainer(new SlotPlayer(inventory, table, x + y * SLOTS_PER_ROW + SLOTS_PER_ROW, PLAYER_X + x * SLOT_SIZE, y * SLOT_SIZE + PLAYER_Y));
             }
         }
 
         for (int x = 0; x < SLOTS_PER_ROW; x++) {
-            addSlotToContainer(new Slot(inventory, x, PLAYER_X + x * SLOT_SIZE, PLAYER_HOT_BAR_Y));
+            addSlotToContainer(new SlotPlayer(inventory, table, x, PLAYER_X + x * SLOT_SIZE, PLAYER_HOT_BAR_Y));
         }
     }
 
@@ -58,8 +59,8 @@ public class ContainerTable extends Container {
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int i) {
         ItemStack itemstack = null;
-        Slot slot = (Slot)inventorySlots.get(i);
-        if(slot != null && slot.getHasStack()) {
+        Slot slot = (SlotBase)inventorySlots.get(i);
+        if(slot != null && slot.getHasStack() && (!(slot instanceof SlotBase) || ((SlotBase)slot).isVisible())) {
             ItemStack slotItem = slot.getStack();
             itemstack = slotItem.copy();
             if(i < table.getSizeInventory()) {
@@ -99,7 +100,7 @@ public class ContainerTable extends Container {
 
         if (item.isStackable()) {
             while (item.stackSize > 0 && (!invert && id < end || invert && id >= start)) {
-                slot = (Slot)this.inventorySlots.get(id);
+                slot = (SlotBase)this.inventorySlots.get(id);
                 if (!(slot instanceof SlotBase) || ((SlotBase)slot).isVisible()) {
                     slotItem = slot.getStack();
 
@@ -137,7 +138,7 @@ public class ContainerTable extends Container {
             }
 
             while (!invert && id < end || invert && id >= start){
-                slot = (Slot)this.inventorySlots.get(id);
+                slot = (SlotBase)this.inventorySlots.get(id);
                 slotItem = slot.getStack();
 
                 if (!(slot instanceof SlotBase) || ((SlotBase)slot).isVisible()) {

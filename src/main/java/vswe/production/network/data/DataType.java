@@ -1,4 +1,4 @@
-package vswe.production.tileentity.data;
+package vswe.production.network.data;
 
 
 import vswe.production.network.DataReader;
@@ -12,7 +12,9 @@ public enum DataType {
     SMELT(DataSmelting.class, 4),
     POWER(DataFuel.class),
     SIDE_ENABLED(DataSide.Enabled.class, DataSide.LENGTH),
-    SIDE_AUTO(DataSide.Auto.class, DataSide.LENGTH);
+    SIDE_AUTO(DataSide.Auto.class, DataSide.LENGTH),
+    SIDE_FILTER(DataSide.Filter.class, DataSide.Filter.LENGTH),
+    SIDE_WHITE_LIST(DataSide.WhiteList.class, DataSide.LENGTH);
 
     private IBitCount lengthBits;
     private int length;

@@ -5,24 +5,32 @@ import net.minecraft.entity.player.EntityPlayer;
 import org.lwjgl.opengl.GL11;
 import vswe.production.gui.container.ContainerTable;
 import vswe.production.gui.container.slot.SlotBase;
-import vswe.production.network.DataWriter;
 import vswe.production.network.PacketHandler;
 import vswe.production.network.PacketId;
 import vswe.production.page.Page;
 import vswe.production.tileentity.TileEntityTable;
-import vswe.production.tileentity.data.DataType;
+import vswe.production.network.data.DataType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class GuiTable extends GuiBase {
 
     private TileEntityTable table;
-
+    private List<SlotBase> slots;
 
     public GuiTable(TileEntityTable table, EntityPlayer player) {
         super(new ContainerTable(table, player));
         xSize = 256;
         ySize = 256;
+        slots = new ArrayList<SlotBase>();
+        for (Object obj : inventorySlots.inventorySlots){
+            SlotBase slot = (SlotBase)obj;
+            slots.add(slot);
 
+            slot.update(slot.isVisible());
+        }
         this.table = table;
     }
 
@@ -36,10 +44,14 @@ public class GuiTable extends GuiBase {
         mc.getTextureManager().bindTexture(BACKGROUND);
         drawTexturedModalRect(0, 0, 0, 0, xSize, ySize);
 
-        drawPageHeaders(mX, mY);
         drawSlots();
-        drawPower(mX, mY);
-        table.getSelectedPage().draw(this, mX, mY);
+        if (table.getMenu() == null) {
+            drawPageHeaders(mX, mY);
+            drawPower(mX, mY);
+            table.getSelectedPage().draw(this, mX, mY);
+        }else{
+            table.getMenu().draw(this, mX, mY);
+        }
 
         GL11.glPopMatrix();
     }
@@ -50,8 +62,12 @@ public class GuiTable extends GuiBase {
         mX -= guiLeft;
         mY -= guiTop;
 
-        clickPageHeader(mX, mY);
-        table.getSelectedPage().onClick(this, mX, mY, button);
+        if (table.getMenu() == null) {
+            clickPageHeader(mX, mY);
+            table.getSelectedPage().onClick(this, mX, mY, button);
+        }else{
+            table.getMenu().onClick(this, mX, mY);
+        }
     }
 
     @Override
@@ -60,7 +76,13 @@ public class GuiTable extends GuiBase {
         mX -= guiLeft;
         mY -= guiTop;
 
-        table.getSelectedPage().onRelease(this, mX, mY, button);
+
+        if (table.getMenu() == null) {
+            table.getSelectedPage().onRelease(this, mX, mY, button);
+        }else{
+            table.getMenu().onRelease(this, mX, mY);
+        }
+
     }
 
 
@@ -115,7 +137,7 @@ public class GuiTable extends GuiBase {
     private static final int SLOT_BIG_OFFSET = SLOT_OFFSET - (SLOT_BIG_SIZE - SLOT_SIZE) / 2;
     private void drawSlots() {
         prepare();
-        for (SlotBase slot : table.getSlots()) {
+        for (SlotBase slot : slots) {
             boolean visible = slot.isVisible();
             slot.update(visible);
             if (visible) {
@@ -124,7 +146,7 @@ public class GuiTable extends GuiBase {
                 int size = isBig ? SLOT_BIG_SIZE : SLOT_SIZE;
                 int offset = isBig ? SLOT_BIG_OFFSET : SLOT_OFFSET;
 
-                drawRect(slot.getX() + offset, slot.getY() + offset, SLOT_SRC_X + slot.getTextureIndex() * size, srcY, size, size);
+                drawRect(slot.getX() + offset, slot.getY() + offset, SLOT_SRC_X + slot.getTextureIndex(this) * size, srcY, size, size);
             }
         }
     }
@@ -146,6 +168,7 @@ public class GuiTable extends GuiBase {
     private static final int POWER_INNER_OFFSET_Y = (POWER_HEIGHT - POWER_INNER_HEIGHT) / 2;
 
     private void drawPower(int mX, int mY) {
+        prepare();
         drawRect(POWER_X + POWER_INNER_OFFSET_X, POWER_Y + POWER_INNER_OFFSET_Y, POWER_INNER_SRC_X + POWER_INNER_WIDTH, POWER_INNER_SRC_Y, POWER_INNER_WIDTH, POWER_INNER_HEIGHT);
 
         int height = POWER_INNER_HEIGHT * table.getPower() / TileEntityTable.MAX_POWER;
