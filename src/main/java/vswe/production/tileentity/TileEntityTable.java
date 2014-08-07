@@ -7,12 +7,17 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityFurnace;
 import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidTankInfo;
+import net.minecraftforge.fluids.IFluidHandler;
 import vswe.production.block.BlockTable;
 import vswe.production.gui.container.slot.SlotBase;
 import vswe.production.gui.container.slot.SlotFuel;
-import vswe.production.gui.container.slot.SlotValidity;
 import vswe.production.gui.menu.GuiMenu;
 import vswe.production.gui.menu.GuiMenuItem;
+import vswe.production.item.Upgrade;
 import vswe.production.network.DataReader;
 import vswe.production.network.DataWriter;
 import vswe.production.network.PacketHandler;
@@ -30,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class TileEntityTable extends TileEntity implements IInventory, ISidedInventory {
+public class TileEntityTable extends TileEntity implements IInventory, ISidedInventory, IFluidHandler {
     private List<Page> pages;
     private Page selectedPage;
     private List<SlotBase> slots;
@@ -283,28 +288,45 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
         }
     }
 
+    private int fuelTick = 0;
+    private static final int FUEL_DELAY = 5;
     private int moveTick = 0;
     private static final int MOVE_DELAY = 20;
+    private boolean lit;
+    private boolean lastLit;
 
     @Override
     public void updateEntity() {
-        reloadFuel();
         for (Page page : pages) {
             page.onUpdate();
         }
 
+        if (!worldObj.isRemote && ++fuelTick >= FUEL_DELAY) {
+            lit = worldObj.getBlockLightValue(xCoord, yCoord + 1, zCoord) == 15;
+            if (lastLit != lit) {
+                lastLit = lit;
+                sendDataToAllPlayer(DataType.LIT);
+            }
+            fuelTick = 0;
+            reloadFuel();
+        }
+
+
         if (!worldObj.isRemote && ++moveTick >= MOVE_DELAY) {
             moveTick = 0;
-            for (Setting setting : getTransferPage().getSettings()) {
-                for (Side side : setting.getSides()) {
-                    transfer(setting, side, side.getInput());
-                    transfer(setting, side, side.getOutput());
+            if (getUpgradePage().hasGlobalUpgrade(Upgrade.AUTO_TRANSFER)) {
+                int transferSize = (int)Math.pow(2, getUpgradePage().getGlobalUpgradeCount(Upgrade.TRANSFER));
+                for (Setting setting : getTransferPage().getSettings()) {
+                    for (Side side : setting.getSides()) {
+                        transfer(setting, side, side.getInput(), transferSize);
+                        transfer(setting, side, side.getOutput(), transferSize);
+                    }
                 }
             }
         }
     }
 
-    private void transfer(Setting setting, Side side, Transfer transfer) {
+    private void transfer(Setting setting, Side side, Transfer transfer, int transferSize) {
         if (transfer.isEnabled() && transfer.isAuto()) {
             ForgeDirection direction = ForgeDirection.values()[BlockTable.getSideFromSideAndMetaReversed(side.getDirection().ordinal(), getBlockMetadata())];
 
@@ -336,9 +358,9 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
                 }
 
                 if (transfer.isInput()) {
-                    transfer(inventory, this, slots2, slots1, directionReversed.ordinal(), direction.ordinal(), 1);
+                    transfer(inventory, this, slots2, slots1, directionReversed.ordinal(), direction.ordinal(), transferSize);
                 }else{
-                    transfer(this, inventory, slots1, slots2, direction.ordinal(), directionReversed.ordinal(), 1);
+                    transfer(this, inventory, slots1, slots2, direction.ordinal(), directionReversed.ordinal(), transferSize);
                 }
             }
 
@@ -411,24 +433,61 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
         }
     }
 
+
+    private int lava;
+    public static final int MAX_LAVA = 1000;
+    private static final int MAX_LAVA_DRAIN = 30;
+    private static final int LAVA_EFFICIENCY = 12;
+    private static final int SOLAR_GENERATION = 4;
+
     private int lastPower;
-    //TODO handle container items
+    private int lastLava;
     private void reloadFuel() {
-        if (!worldObj.isRemote) {
-            ItemStack fuel = fuelSlot.getStack();
-            if (fuel != null) {
-                int fuelLevel = TileEntityFurnace.getItemBurnTime(fuel);
-                if (fuelLevel > 0 && fuelLevel + power <= MAX_POWER) {
-                    power += fuelLevel;
+        if (getUpgradePage().hasGlobalUpgrade(Upgrade.SOLAR) && isLitAndCanSeeTheSky()) {
+            power += SOLAR_GENERATION;
+        }
+
+        if (getUpgradePage().hasGlobalUpgrade(Upgrade.LAVA)) {
+            int space = (MAX_POWER - power) / LAVA_EFFICIENCY;
+            if (space > 0) {
+                int move = Math.max(0, Math.min(MAX_LAVA_DRAIN, Math.min(space, lava)));
+                power += move * LAVA_EFFICIENCY;
+                lava -= move;
+            }
+        }
+
+        ItemStack fuel = fuelSlot.getStack();
+        if (fuel != null && fuelSlot.isItemValid(fuel)) {
+            int fuelLevel = TileEntityFurnace.getItemBurnTime(fuel);
+            fuelLevel *= 1 + getUpgradePage().getGlobalUpgradeCount(Upgrade.EFFICIENCY) / 4F;
+
+            if (fuelLevel > 0 && fuelLevel + power <= MAX_POWER) {
+                power += fuelLevel;
+                if (fuel.getItem().hasContainerItem(fuel)) {
+                    fuelSlot.putStack(fuel.getItem().getContainerItem(fuel).copy());
+                }else{
                     decrStackSize(fuelSlot.getSlotIndex(), 1);
                 }
             }
-
-            if (power != lastPower) {
-                lastPower = power;
-                sendDataToAllPlayer(DataType.POWER);
-            }
         }
+
+        if (power > MAX_POWER) {
+            power = MAX_POWER;
+        }
+
+        if (power != lastPower) {
+            lastPower = power;
+            sendDataToAllPlayer(DataType.POWER);
+        }
+
+        if (lava != lastLava) {
+            lastLava = lava;
+            sendDataToAllPlayer(DataType.LAVA);
+        }
+    }
+
+    public boolean isLitAndCanSeeTheSky() {
+        return lit &&  worldObj.canBlockSeeTheSky(xCoord, yCoord + 1, zCoord);
     }
 
 
@@ -521,5 +580,73 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
 
     public void setMenu(GuiMenuItem menu) {
         this.menu = menu;
+    }
+
+
+
+
+    @Override
+    public int fill(ForgeDirection from, FluidStack resource, boolean doFill) {
+        if (resource != null && resource.getFluid() != null && resource.getFluid().equals(FluidRegistry.LAVA)) {
+            int space = MAX_LAVA - lava;
+            int fill = Math.min(space, resource.amount);
+            if (doFill) {
+                lava += fill;
+            }
+
+            return fill;
+        }
+
+        return 0;
+    }
+
+    @Override
+    public FluidStack drain(ForgeDirection from, FluidStack resource, boolean doDrain) {
+        if (resource != null && resource.getFluid() != null && resource.getFluid().equals(FluidRegistry.LAVA)) {
+            return drain(from, resource.amount, doDrain);
+        }else{
+            return null;
+        }
+    }
+
+    @Override
+    public FluidStack drain(ForgeDirection from, int maxDrain, boolean doDrain) {
+        int drain = Math.min(maxDrain, lava);
+        if (doDrain) {
+            lava -= drain;
+        }
+
+        return drain == 0 ? null : new FluidStack(FluidRegistry.LAVA, drain);
+    }
+
+    @Override
+    public boolean canFill(ForgeDirection from, Fluid fluid) {
+        return fluid != null && fluid.equals(FluidRegistry.LAVA);
+    }
+
+    @Override
+    public boolean canDrain(ForgeDirection from, Fluid fluid) {
+        return fluid != null && fluid.equals(FluidRegistry.LAVA);
+    }
+
+    @Override
+    public FluidTankInfo[] getTankInfo(ForgeDirection from) {
+        return new FluidTankInfo[] {new FluidTankInfo(new FluidStack(FluidRegistry.LAVA, lava), MAX_LAVA)};
+    }
+
+    public int getLava() {
+        return lava;
+    }
+
+    public void setLava(int lava) {
+        this.lava = lava;
+    }
+
+    public boolean isLit() {
+        return lit;
+    }
+
+    public void setLit(boolean lit) {
+        this.lit = lit;
     }
 }

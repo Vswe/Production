@@ -2,9 +2,11 @@ package vswe.production.gui;
 
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.EnumChatFormatting;
 import org.lwjgl.opengl.GL11;
 import vswe.production.gui.container.ContainerTable;
 import vswe.production.gui.container.slot.SlotBase;
+import vswe.production.item.Upgrade;
 import vswe.production.network.PacketHandler;
 import vswe.production.network.PacketId;
 import vswe.production.page.Page;
@@ -189,10 +191,26 @@ public class GuiTable extends GuiBase {
         drawRect(POWER_X, POWER_Y + POWER_INNER_OFFSET_Y + offset - 1, POWER_SRC_X, POWER_SRC_Y - 1, POWER_WIDTH, 1);
 
         int srcX = POWER_SRC_X;
-        if (inBounds(POWER_X, POWER_Y, POWER_WIDTH, POWER_HEIGHT, mX, mY)) {
+        boolean hover = inBounds(POWER_X, POWER_Y, POWER_WIDTH, POWER_HEIGHT, mX, mY);
+        if (hover) {
             srcX += POWER_WIDTH;
         }
         drawRect(POWER_X, POWER_Y, srcX, POWER_SRC_Y, POWER_WIDTH, POWER_HEIGHT);
+
+        if (hover) {
+            String str = "Power: " + formatNumber(table.getPower()) + "/" + formatNumber(TileEntityTable.MAX_POWER);
+            if (table.getLava() > 0 && table.getUpgradePage().hasGlobalUpgrade(Upgrade.LAVA)) {
+                str += "\n" + EnumChatFormatting.GOLD + "Lava: " + formatNumber(table.getLava()) + "/" + formatNumber(TileEntityTable.MAX_LAVA);
+            }
+            if (table.getUpgradePage().hasGlobalUpgrade(Upgrade.SOLAR)) {
+                str += "\n" + EnumChatFormatting.YELLOW + "Solar panel: " + (table.isLitAndCanSeeTheSky() ? "Lit" : EnumChatFormatting.GRAY + "Dark");
+            }
+            drawMouseOver(str, mX, mY);
+        }
+    }
+
+    private String formatNumber(int number) {
+        return String.format("%,d", number).replace((char)160,(char)32);
     }
 
     @Override

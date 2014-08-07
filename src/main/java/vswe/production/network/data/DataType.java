@@ -15,7 +15,9 @@ public enum DataType {
     SIDE_AUTO(DataSide.Auto.class, DataSide.LENGTH),
     SIDE_FILTER(DataSide.Filter.class, DataSide.FilterBase.LENGTH),
     SIDE_WHITE_LIST(DataSide.WhiteList.class, DataSide.LENGTH),
-    SIDE_FILTER_MODE(DataSide.FilterMode.class, DataSide.FilterBase.LENGTH),;
+    SIDE_FILTER_MODE(DataSide.FilterMode.class, DataSide.FilterBase.LENGTH),
+    LAVA(DataLava.class),
+    LIT(DataLit.class);
 
     private IBitCount lengthBits;
     private int length;

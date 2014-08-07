@@ -64,11 +64,11 @@ public class SlotBase extends Slot {
     }
 
     public boolean isOutputValid(int id, ItemStack item) {
-        return output[id] != null && output[id].isValid(item);
+        return output[id] != null && output[id].isValid(table, item);
     }
 
     public boolean isInputValid(int id, ItemStack item) {
-        return input[id] != null && input[id].isValid(item);
+        return input[id] != null && input[id].isValid(table, item);
     }
 
     public void resetValidity(int id) {

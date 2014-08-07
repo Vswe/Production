@@ -25,7 +25,7 @@ public enum Upgrade {
     SPEED("Production Speed", "Increase the production speed", 8),
     QUEUE("Input Queue", "Adds an input queue", 3, ParentType.SMELTING),
     EFFICIENCY("Fuel Efficiency", "Improves the fuel efficiency of solid fuel types", 4, ParentType.GLOBAL),
-    LAVA("Lava Generator", "Allows lava and lava containers to be used as fuel", 1, ParentType.GLOBAL),
+    LAVA("Lava Generator", "Allows lava to be used as fuel", 1, ParentType.GLOBAL),
     SOLAR("Solar Generator", "Allows the table to be charged by solar power", 1,  ParentType.GLOBAL),
     AUTO_TRANSFER("Auto Transfer", "Enables auto transfer to and from the table", 1, ParentType.GLOBAL),
     FILTER("Filter", "Enables transfer filters", 1,  ParentType.GLOBAL),

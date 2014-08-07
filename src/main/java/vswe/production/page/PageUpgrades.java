@@ -75,10 +75,12 @@ public class PageUpgrades extends Page {
                 upgrades[i] = loadUpgrades(startId + i * SLOT_ROWS * SLOTS_PER_ROW + 1, SLOT_ROWS * SLOTS_PER_ROW - 1);
             }
         }
-        upgrades[4] = loadUpgrades(startId + 4 * SLOT_ROWS * SLOTS_PER_ROW, GLOBAL_SLOTS);
+        upgrades[GLOBAL_ID] = loadUpgrades(startId + 4 * SLOT_ROWS * SLOTS_PER_ROW, GLOBAL_SLOTS);
     }
 
-    public int getUpgradeCount(int id, Upgrade upgrade) {
+
+    private static final int GLOBAL_ID = 4;
+    public int getUpgradeCountRaw(int id, Upgrade upgrade) {
         //noinspection unchecked
         Map<Upgrade, Integer> map = upgrades[id];
 
@@ -92,9 +94,22 @@ public class PageUpgrades extends Page {
         return 0;
     }
 
-    public int getGlobalUpgradeCount(Upgrade upgrade) {
-        return getUpgradeCount(4, upgrade);
+    public int getUpgradeCount(int id, Upgrade upgrade) {
+        return Math.min(getUpgradeCountRaw(id, upgrade), upgrade.getMaxCount());
     }
+
+    public boolean hasUpgrade(int id, Upgrade upgrade) {
+        return getUpgradeCountRaw(id, upgrade) > 0;
+    }
+
+    public int getGlobalUpgradeCount(Upgrade upgrade) {
+        return getUpgradeCount(GLOBAL_ID, upgrade);
+    }
+
+    public boolean hasGlobalUpgrade(Upgrade upgrade) {
+        return hasUpgrade(GLOBAL_ID, upgrade);
+    }
+
 
     private Map<Upgrade, Integer> loadUpgrades(int startId, int length) {
         Map<Upgrade, Integer> map = new HashMap<Upgrade, Integer>();
@@ -108,7 +123,6 @@ public class PageUpgrades extends Page {
                     count = 0;
                 }
                 count += itemStack.stackSize;
-                System.out.println(count);
                 map.put(upgrade, count);
             }
         }

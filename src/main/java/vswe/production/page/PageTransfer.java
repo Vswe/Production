@@ -8,6 +8,7 @@ import vswe.production.gui.component.CheckBox;
 import vswe.production.gui.GuiBase;
 import vswe.production.gui.GuiTable;
 import vswe.production.gui.menu.GuiMenuItem;
+import vswe.production.item.Upgrade;
 import vswe.production.page.setting.Direction;
 import vswe.production.page.setting.ItemSetting;
 import vswe.production.page.setting.Setting;
@@ -72,7 +73,7 @@ public class PageTransfer extends Page {
 
             @Override
             public boolean isVisible() {
-                return selectedSetting != null; //TODO should also only be visible if select mode can do something (i.e. if there is a filter or an auto transfer upgrade)
+                return selectedSetting != null && shouldSelectModeBeVisible();
             }
         });
 
@@ -109,7 +110,7 @@ public class PageTransfer extends Page {
 
             @Override
             public boolean isVisible() {
-                return selectedTransfer != null;
+                return selectedTransfer != null && PageTransfer.this.table.getUpgradePage().hasGlobalUpgrade(Upgrade.AUTO_TRANSFER);
             }
         });
 
@@ -159,7 +160,7 @@ public class PageTransfer extends Page {
 
             @Override
             public boolean isVisible() {
-                return selectedTransfer != null;
+                return selectedTransfer != null && PageTransfer.this.table.getUpgradePage().hasGlobalUpgrade(Upgrade.FILTER);
             }
 
             @Override
@@ -181,6 +182,10 @@ public class PageTransfer extends Page {
 
     public int getSyncId(ItemSetting itemSetting) {
         return DataSide.FilterBase.getId(selectedSetting, selectedSide, selectedTransfer, itemSetting);
+    }
+
+    private boolean shouldSelectModeBeVisible() {
+        return table.getUpgradePage().hasGlobalUpgrade(Upgrade.AUTO_TRANSFER) || table.getUpgradePage().hasGlobalUpgrade(Upgrade.FILTER);
     }
 
     private static final int SIDE_X = 75;
@@ -219,10 +224,18 @@ public class PageTransfer extends Page {
             boolean isValid = setting.isValid();
             boolean isSelected = setting.equals(selectedSetting);
 
-            if (isSelected && !isValid) {
-                selectedTransfer = null;
-                selectedSide = null;
-                selectedSetting = null;
+            if (isSelected) {
+                if (!shouldSelectModeBeVisible()) {
+                    selectMode = false;
+                    selectedTransfer = null;
+                    selectedSide = null;
+                }
+
+                if (!isValid) {
+                    selectedTransfer = null;
+                    selectedSide = null;
+                    selectedSetting = null;
+                }
             }
 
             int textureIndexX = isValid && gui.inBounds(setting.getX(), setting.getY(), SETTING_SIZE, SETTING_SIZE, mX, mY) ? 1 : 0;
@@ -243,10 +256,10 @@ public class PageTransfer extends Page {
 
 
                 gui.drawRect(side.getX(), side.getY(), SIDE_SRC_X + textureIndexX * SIDE_SIZE, SIDE_SRC_Y + textureIndexY * SIDE_SIZE, SIDE_SIZE, SIDE_SIZE);
-                gui.drawBlockIcon(ModBlocks.table.getIcon(side.getDirection().ordinal(), 0), side.getX() + SIDE_ITEM_OFFSET, side.getY() + SIDE_ITEM_OFFSET);
+                gui.drawBlockIcon(ModBlocks.table.getIconFromSideAndMeta(side.getDirection().ordinal(), 0), side.getX() + SIDE_ITEM_OFFSET, side.getY() + SIDE_ITEM_OFFSET);
             }
 
-            if (selectedTransfer != null) {
+            if (selectedTransfer != null && table.getUpgradePage().hasGlobalUpgrade(Upgrade.FILTER)) {
                 gui.drawString("Filter", 8, 100, 0x404040);
 
                 for (int i = 0; i < ItemSetting.ITEM_COUNT; i++) {
@@ -336,7 +349,7 @@ public class PageTransfer extends Page {
                 }
             }
 
-            if(selectedTransfer != null) {
+            if(selectedTransfer != null && table.getUpgradePage().hasGlobalUpgrade(Upgrade.FILTER)) {
                 for (int i = 0; i < ItemSetting.ITEM_COUNT; i++) {
                     if (gui.inBounds(ITEM_X + i * ITEM_OFFSET, ITEM_Y, ITEM_SIZE, ITEM_SIZE, mX, mY)) {
                         EntityPlayer player = gui.mc.thePlayer;

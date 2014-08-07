@@ -2,6 +2,8 @@ package vswe.production.page.setting;
 
 
 import net.minecraft.item.ItemStack;
+import vswe.production.item.Upgrade;
+import vswe.production.tileentity.TileEntityTable;
 
 public class Transfer {
     private boolean enabled;
@@ -51,8 +53,8 @@ public class Transfer {
         return items[id];
     }
 
-    public boolean isValid(ItemStack item) {
-        if (item == null) {
+    public boolean isValid(TileEntityTable table, ItemStack item) {
+        if (item == null || !table.getUpgradePage().hasGlobalUpgrade(Upgrade.FILTER)) {
             return true;
         }
 

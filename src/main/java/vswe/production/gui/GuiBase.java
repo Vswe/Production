@@ -12,6 +12,10 @@ import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 
 public abstract class GuiBase extends GuiContainer {
     public GuiBase(Container container) {
@@ -136,5 +140,70 @@ public abstract class GuiBase extends GuiContainer {
         GL11.glTranslatef(-x, -y, 0);
         Gui.drawRect(x, y + 1, x + 1, y + 10, color);
         GL11.glPopMatrix();
+    }
+
+    public void drawMouseOver(String str, int x, int y) {
+        List<String> lst = new ArrayList<String>();
+        Collections.addAll(lst, str.split("\n"));
+        drawMouseOver(lst, x, y);
+    }
+
+    public void drawMouseOver(List<String> str, int x, int y) {
+        GL11.glDisable(GL11.GL_DEPTH_TEST);
+
+        int w = 0;
+
+        for (String line : str) {
+            int l = fontRendererObj.getStringWidth(line);
+
+            if (l > w) {
+                w = l;
+            }
+        }
+
+        x += 12;
+        y -= 12;
+        int h = 8;
+
+        if (str.size() > 1){
+            h += 2 + (str.size() - 1) * 10;
+        }
+
+        if (x + w > this.width) {
+            x -= 28 + w;
+        }
+
+        if (y + h + 6 > this.height) {
+            y = this.height - h - 6;
+        }
+
+        this.zLevel = 300.0F;
+        int bg = -267386864;
+        this.drawGradientRect(x - 3, y - 4, x + w + 3, y - 3, bg, bg);
+        this.drawGradientRect(x - 3, y + h + 3, x + w + 3, y + h + 4, bg, bg);
+        this.drawGradientRect(x - 3, y - 3, x + w + 3, y + h + 3, bg, bg);
+        this.drawGradientRect(x - 4, y - 3, x - 3, y + h + 3, bg, bg);
+        this.drawGradientRect(x + w + 3, y - 3, x + w + 4, y + h + 3, bg, bg);
+        int border1 = 1347420415;
+        int border2 = (border1 & 16711422) >> 1 | border1 & -16777216;
+        this.drawGradientRect(x - 3, y - 3 + 1, x - 3 + 1, y + h + 3 - 1, border1, border2);
+        this.drawGradientRect(x + w + 2, y - 3 + 1, x + w + 3, y + h + 3 - 1, border1, border2);
+        this.drawGradientRect(x - 3, y - 3, x + w + 3, y - 3 + 1, border1, border1);
+        this.drawGradientRect(x - 3, y + h + 2, x + w + 3, y + h + 3, border2, border2);
+
+        for (int i = 0; i < str.size(); i++) {
+            String line = str.get(i);
+            fontRendererObj.drawStringWithShadow(line, x, y, -1);
+
+            if (i == 0) {
+                y += 2;
+            }
+
+            y += 10;
+        }
+
+        this.zLevel = 0.0F;
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
+        GL11.glColor4f(1F, 1F, 1F, 1F);
     }
 }

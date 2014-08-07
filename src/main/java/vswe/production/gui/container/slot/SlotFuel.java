@@ -3,6 +3,8 @@ package vswe.production.gui.container.slot;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntityFurnace;
+import net.minecraftforge.fluids.FluidContainerRegistry;
+import vswe.production.item.Upgrade;
 import vswe.production.page.Page;
 import vswe.production.tileentity.TileEntityTable;
 
@@ -13,6 +15,6 @@ public class SlotFuel extends SlotTable {
 
     @Override
     public boolean isItemValid(ItemStack itemstack) {
-        return super.isItemValid(itemstack) && TileEntityFurnace.isItemFuel(itemstack);
+        return super.isItemValid(itemstack) && TileEntityFurnace.isItemFuel(itemstack) && !FluidContainerRegistry.isFilledContainer(itemstack);
     }
 }

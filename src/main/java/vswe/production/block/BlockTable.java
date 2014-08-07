@@ -14,6 +14,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.MathHelper;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import vswe.production.StevesProduction;
 import vswe.production.creativetab.CreativeTabProduction;
@@ -51,7 +52,17 @@ public class BlockTable extends BlockContainer {
     @SideOnly(Side.CLIENT)
     @Override
     public IIcon getIcon(int side, int meta) {
+        return getIconFromSideAndMeta(side, 2);
+    }
+
+    @SideOnly(Side.CLIENT)
+    public IIcon getIconFromSideAndMeta(int side, int meta) {
         return icons[getSideFromSideAndMeta(side, meta)];
+    }
+
+    @Override
+    public IIcon getIcon(IBlockAccess world, int x, int y, int z, int side) {
+        return getIconFromSideAndMeta(side, world.getBlockMetadata(x, y, z));
     }
 
     public static int getSideFromSideAndMeta(int side, int meta) {
