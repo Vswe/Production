@@ -30,6 +30,6 @@ public class CreativeTabProduction extends CreativeTabs {
 
     @Override
     public String getTranslatedTabLabel() {
-        return "Steve's Production";
+        return "Steve's Production Table";
     }
 }

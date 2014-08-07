@@ -19,7 +19,7 @@ public final class ModBlocks {
         table = new BlockTable();
         GameRegistry.registerBlock(table, UNLOCALIZED_NAME);
         GameRegistry.registerTileEntity(TileEntityTable.class, UNLOCALIZED_NAME);
-        LanguageRegistry.addName(table, LOCALIZED_NAME); //TODO
+        LanguageRegistry.addName(table, LOCALIZED_NAME);
 
         tab.init(table);
     }

@@ -66,7 +66,7 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
         items = new ItemStack[slots.size()];
 
         setSelectedPage(pages.get(0));
-        reloadTransferSides();
+        onUpgradeChange();
     }
 
     public List<SlotBase> getSlots() {
@@ -277,6 +277,9 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
                     onSideChange();
                 }
                 break;
+            case UPGRADE_CHANGE:
+                onUpgradeChange();
+                break;
         }
     }
 
@@ -429,8 +432,16 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
     }
 
 
-    public void onUpgradeChange() {
+    public void onUpgradeChangeDistribute() {
+        if (!worldObj.isRemote) {
+            onUpgradeChange();
+            sendToAllPlayers(PacketHandler.getWriter(this, PacketId.UPGRADE_CHANGE));
+        }
+    }
+
+    private void onUpgradeChange() {
         reloadTransferSides();
+        getUpgradePage().onUpgradeChange();
     }
 
     public void onSideChange() {

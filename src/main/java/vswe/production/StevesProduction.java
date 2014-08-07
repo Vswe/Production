@@ -9,9 +9,10 @@ import cpw.mods.fml.common.network.FMLEventChannel;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import vswe.production.block.ModBlocks;
 import vswe.production.gui.GuiHandler;
+import vswe.production.item.ModItems;
 import vswe.production.network.PacketHandler;
 
-@Mod(modid = "StevesProduction", name = "Steve's Production", version = "inDev")
+@Mod(modid = "StevesProduction", name = "Steve's Production Table", version = "0.1.1")
 public class StevesProduction {
     public static String CHANNEL = "SProd";
 
@@ -25,6 +26,7 @@ public class StevesProduction {
     public void preInit(FMLPreInitializationEvent event) {
         packetHandler = NetworkRegistry.INSTANCE.newEventDrivenChannel(CHANNEL);
         ModBlocks.init();
+        ModItems.init();
     }
 
     @Mod.EventHandler
