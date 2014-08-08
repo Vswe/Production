@@ -86,10 +86,6 @@ public class UnitSmelting extends Unit {
         }
     }
 
-    @Override
-    public void onSlotChanged() {
-
-    }
 
     @Override
     protected ItemStack getProductionResult() {

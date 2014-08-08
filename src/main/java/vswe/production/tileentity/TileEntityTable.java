@@ -30,6 +30,7 @@ import vswe.production.page.setting.Setting;
 import vswe.production.page.setting.Side;
 import vswe.production.page.setting.Transfer;
 import vswe.production.network.data.DataType;
+import vswe.production.page.unit.UnitCrafting;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -122,7 +123,6 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
         if (item != null) {
             if (item.stackSize <= count) {
                 setInventorySlotContents(id, null);
-                markDirty();
                 return item;
             }
 
@@ -132,7 +132,6 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
                 setInventorySlotContents(id, null);
             }
 
-            markDirty();
             return result;
         }else {
             return null;
@@ -369,25 +368,54 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
     }
 
     private void transfer(IInventory from, IInventory to, int[] fromSlots, int[] toSlots, int fromSide, int toSide, int maxTransfer) {
-        ISidedInventory fromSided = from instanceof ISidedInventory ? (ISidedInventory)from : null;
-        ISidedInventory toSided = to instanceof ISidedInventory ? (ISidedInventory)to : null;
+        int oldTransfer = maxTransfer;
 
-        for (int fromSlot : fromSlots) {
-            ItemStack fromItem = from.getStackInSlot(fromSlot);
-            if (fromItem != null && fromItem.stackSize > 0) {
-                if (fromSided == null || fromSided.canExtractItem(fromSlot, fromItem, fromSide)) {
-                    if (fromItem.isStackable()) {
-                        for (int toSlot : toSlots) {
-                            ItemStack toItem = to.getStackInSlot(toSlot);
-                            if (toItem != null && toItem.stackSize > 0) {
-                                if (toSided == null || toSided.canInsertItem(toSlot, fromItem, toSide)) {
-                                    if (fromItem.isItemEqual(toItem) && ItemStack.areItemStackTagsEqual(toItem, fromItem)) {
-                                        int maxSize = Math.min(toItem.getMaxStackSize(), to.getInventoryStackLimit());
-                                        int maxMove = Math.min(maxSize - toItem.stackSize, Math.min(maxTransfer, fromItem.stackSize));
+        try {
+            ISidedInventory fromSided = from instanceof ISidedInventory ? (ISidedInventory)from : null;
+            ISidedInventory toSided = to instanceof ISidedInventory ? (ISidedInventory)to : null;
 
-                                        toItem.stackSize += maxMove;
-                                        maxTransfer -= maxMove;
-                                        fromItem.stackSize -= maxMove;
+            for (int fromSlot : fromSlots) {
+                ItemStack fromItem = from.getStackInSlot(fromSlot);
+                if (fromItem != null && fromItem.stackSize > 0) {
+                    if (fromSided == null || fromSided.canExtractItem(fromSlot, fromItem, fromSide)) {
+                        if (fromItem.isStackable()) {
+                            for (int toSlot : toSlots) {
+                                ItemStack toItem = to.getStackInSlot(toSlot);
+                                if (toItem != null && toItem.stackSize > 0) {
+                                    if (toSided == null || toSided.canInsertItem(toSlot, fromItem, toSide)) {
+                                        if (fromItem.isItemEqual(toItem) && ItemStack.areItemStackTagsEqual(toItem, fromItem)) {
+                                            int maxSize = Math.min(toItem.getMaxStackSize(), to.getInventoryStackLimit());
+                                            int maxMove = Math.min(maxSize - toItem.stackSize, Math.min(maxTransfer, fromItem.stackSize));
+
+                                            toItem.stackSize += maxMove;
+                                            maxTransfer -= maxMove;
+                                            fromItem.stackSize -= maxMove;
+                                            if (fromItem.stackSize == 0) {
+                                                from.setInventorySlotContents(fromSlot, null);
+                                            }
+
+                                            if (maxTransfer == 0) {
+                                                return;
+                                            } else if (fromItem.stackSize == 0) {
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (fromItem.stackSize > 0) {
+                            for (int toSlot : toSlots) {
+                                ItemStack toItem = to.getStackInSlot(toSlot);
+                                if (toItem == null && to.isItemValidForSlot(toSlot, fromItem)) {
+                                    if (toSided == null || toSided.canInsertItem(toSlot, fromItem, toSide)) {
+                                        toItem = fromItem.copy();
+                                        toItem.stackSize = Math.min(maxTransfer, fromItem.stackSize);
+                                        to.setInventorySlotContents(toSlot, toItem);
+                                        maxTransfer -= toItem.stackSize;
+                                        fromItem.stackSize -= toItem.stackSize;
+
                                         if (fromItem.stackSize == 0) {
                                             from.setInventorySlotContents(fromSlot, null);
                                         }
@@ -402,34 +430,14 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
                             }
                         }
                     }
-
-                    if (fromItem.stackSize > 0) {
-                        for (int toSlot : toSlots) {
-                            ItemStack toItem = to.getStackInSlot(toSlot);
-                            if (toItem == null && to.isItemValidForSlot(toSlot, fromItem)) {
-                                if (toSided == null || toSided.canInsertItem(toSlot, fromItem, toSide)) {
-                                    toItem = fromItem.copy();
-                                    toItem.stackSize = Math.min(maxTransfer, fromItem.stackSize);
-                                    to.setInventorySlotContents(toSlot, toItem);
-                                    maxTransfer -= toItem.stackSize;
-                                    fromItem.stackSize -= toItem.stackSize;
-
-                                    if (fromItem.stackSize == 0) {
-                                        from.setInventorySlotContents(fromSlot, null);
-                                    }
-
-                                    if (maxTransfer == 0) {
-                                        return;
-                                    } else if (fromItem.stackSize == 0) {
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
                 }
-            }
 
+            }
+        }finally {
+            if (oldTransfer != maxTransfer) {
+                to.markDirty();
+                from.markDirty();
+            }
         }
     }
 
@@ -501,6 +509,9 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
     private void onUpgradeChange() {
         reloadTransferSides();
         getUpgradePage().onUpgradeChange();
+        for (UnitCrafting crafting : getMainPage().getCraftingList()) {
+            crafting.onUpgradeChange();
+        }
     }
 
     public void onSideChange() {
@@ -561,7 +572,7 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
 
     @Override
     public boolean canInsertItem(int slot, ItemStack item, int side) {
-        return isItemValidForSlot(slot, item) && slots.get(slot).isInputValid(getTransferSide(side), item);
+        return isItemValidForSlot(slot, item) && slots.get(slot).canAcceptItem(item) && slots.get(slot).isInputValid(getTransferSide(side), item);
     }
 
     @Override

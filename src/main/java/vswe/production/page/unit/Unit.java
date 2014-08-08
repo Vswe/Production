@@ -247,9 +247,6 @@ public abstract class Unit {
 
     public abstract boolean isEnabled();
 
-    //TODO make sure this is triggered when items enter through, for instance, hoppers. If it don't, trigger this from the tile entity rather than from the slot. (it probably don't work to be honest)
-    //TODO figure out a way to make this trigger only once. For instance, using drag click can make this happen 9 times. When clicking normally it fires twice as well.
-    public void onSlotChanged() {}
 
     private List<SlotBase> slots = new ArrayList<SlotBase>();
     public List<SlotBase> getSlots() {

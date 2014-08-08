@@ -89,4 +89,8 @@ public class SlotBase extends Slot {
         return true;
     }
 
+    public boolean canAcceptItem(ItemStack item) {
+        return true;
+    }
+
 }

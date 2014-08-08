@@ -23,11 +23,6 @@ public class SlotUnit extends SlotTable {
         return unit.isEnabled();
     }
 
-    @Override
-    public void onSlotChanged() {
-        super.onSlotChanged();
-        unit.onSlotChanged();
-    }
 
     @Override
     public boolean canSupplyItems() {
