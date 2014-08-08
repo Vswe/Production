@@ -27,6 +27,7 @@ public class UnitCrafting extends Unit {
     private static final int SLOT_SIZE = 18;
     private static final int GRID_WIDTH = 3;
     private static final int GRID_HEIGHT = 3;
+    private static final int GRID_SIZE = GRID_WIDTH * GRID_HEIGHT;
     private static final int RESULT_OFFSET_X = 94;
     private static final int RESULT_OFFSET_Y = 18;
     public static final int RESULT_AUTO_OFFSET = -5;
@@ -49,15 +50,15 @@ public class UnitCrafting extends Unit {
             }
         }
 
+        for (int i = 0; i < STORAGE_COUNT; i++) {
+            addSlot(new SlotUnitCraftingStorage(table, page, id++, this.x + START_X + i * SLOT_SIZE, this.y + STORAGE_Y, this));
+        }
+
         resultId = id;
         addSlot(new SlotUnitCraftingResult(table, page, id++, this.x + START_X + RESULT_OFFSET_X, this.y + START_Y + RESULT_OFFSET_Y, this));
 
         outputId = id;
         addSlot(new SlotUnitCraftingOutput(table, page, id++, this.x + START_X + RESULT_OFFSET_X, this.y + START_Y + 2 * SLOT_SIZE, this));
-
-        for (int i = 0; i < STORAGE_COUNT; i++) {
-            addSlot(new SlotUnitCraftingStorage(table, page, id++, this.x + START_X + i * SLOT_SIZE, this.y + STORAGE_Y, this));
-        }
 
         return id;
     }
@@ -83,19 +84,30 @@ public class UnitCrafting extends Unit {
     }
 
     private void onCrafting(CraftingBase crafting, boolean fake) {
-        for (int i = 0; i < crafting.getSizeInventory(); i++) {
+        for (int i = 0; i < GRID_SIZE; i++) {
             ItemStack itemStack = crafting.getStackInSlot(i);
             if (itemStack != null && itemStack.getItem() != null) {
+                int id = i;
+                for (int j = GRID_SIZE; j < crafting.getSizeInventory(); j++) {
+                    ItemStack other = crafting.getStackInSlot(j);
+                    //TODO support ore dictionary and fuzzy etc?. Problem is that it needs to figure out if hte recipe supports it
+                    if (other != null && itemStack.isItemEqual(other) && ItemStack.areItemStackTagsEqual(itemStack, other)) {
+                        id = j;
+                        itemStack = other;
+                        break;
+                    }
+                }
+
                 if (itemStack.getItem().hasContainerItem(itemStack)) {
                     //TODO where should the container go?
                     if (false && itemStack.getItem().doesContainerItemLeaveCraftingGrid(itemStack)) {
-                        crafting.decrStackSize(i, 1);
+                        crafting.decrStackSize(id, 1);
                         ItemStack containerItem = itemStack.getItem().getContainerItem(itemStack);
                     }else{
-                        crafting.setInventorySlotContents(i, itemStack.getItem().getContainerItem(itemStack));
+                        crafting.setInventorySlotContents(id, itemStack.getItem().getContainerItem(itemStack));
                     }
                 }else{
-                    crafting.decrStackSize(i, 1);
+                    crafting.decrStackSize(id, 1);
                 }
             }
         }
@@ -177,13 +189,18 @@ public class UnitCrafting extends Unit {
         private ItemStack[] items;
 
         private CraftingDummy(CraftingBase base) {
-            items = new ItemStack[getSizeInventory()];
+            items = new ItemStack[base.getSizeInventory()];
             for (int i = 0; i < items.length; i++) {
                 ItemStack itemStack = base.getStackInSlot(i);
                 if (itemStack != null) {
                     items[i] = itemStack.copy();
                 }
             }
+        }
+
+        @Override
+        public int getSizeInventory() {
+            return items.length;
         }
 
         @Override
@@ -207,8 +224,8 @@ public class UnitCrafting extends Unit {
         }
 
         @Override
-        public final int getSizeInventory() {
-            return INVENTORY_WIDTH * INVENTORY_HEIGHT;
+        public int getSizeInventory() {
+            return INVENTORY_WIDTH * INVENTORY_HEIGHT + (table.getUpgradePage().hasUpgrade(id, Upgrade.STORAGE) ? STORAGE_COUNT : 0);
         }
 
 
@@ -281,6 +298,8 @@ public class UnitCrafting extends Unit {
             if (!(obj instanceof CraftingBase)) return false;
 
             CraftingBase crafting = (CraftingBase)obj;
+
+            if (getSizeInventory() != crafting.getSizeInventory()) return false;
 
             for (int i = 0; i < getSizeInventory(); i++) {
                 if (!ItemStack.areItemStacksEqual(getStackInSlot(i), crafting.getStackInSlot(i))) {

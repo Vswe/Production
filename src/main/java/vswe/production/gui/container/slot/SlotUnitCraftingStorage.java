@@ -3,6 +3,7 @@ package vswe.production.gui.container.slot;
 import vswe.production.item.Upgrade;
 import vswe.production.page.Page;
 import vswe.production.page.unit.Unit;
+import vswe.production.page.unit.UnitCrafting;
 import vswe.production.tileentity.TileEntityTable;
 
 
@@ -27,6 +28,12 @@ public class SlotUnitCraftingStorage extends SlotUnit {
 
     @Override
     public boolean canAcceptItems() {
-        return false; //TODO the storage slots can't receive items since the crafting table can't use those slots yet
+        return true;
+    }
+
+    @Override
+    public void onSlotChanged() {
+        super.onSlotChanged();
+        ((UnitCrafting)unit).onGridChanged();
     }
 }
