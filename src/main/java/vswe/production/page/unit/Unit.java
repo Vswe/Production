@@ -193,6 +193,7 @@ public abstract class Unit {
 
                         chargeCount++;
                         table.sendDataToAllPlayer(DataType.CHARGED, DataUnit.getId(this));
+
                     }
                     updatedProgress = true;
                 }

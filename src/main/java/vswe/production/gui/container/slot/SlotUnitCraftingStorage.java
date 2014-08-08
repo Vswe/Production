@@ -24,4 +24,9 @@ public class SlotUnitCraftingStorage extends SlotUnit {
     private boolean isAvailable() {
         return table.getUpgradePage().hasUpgrade(unit.getId(), Upgrade.STORAGE);
     }
+
+    @Override
+    public boolean canAcceptItems() {
+        return false;
+    }
 }

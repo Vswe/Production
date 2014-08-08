@@ -1,5 +1,7 @@
 package vswe.production.page;
 
+import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import vswe.production.block.ModBlocks;
@@ -366,7 +368,7 @@ public class PageTransfer extends Page {
             if(selectedTransfer != null && table.getUpgradePage().hasGlobalUpgrade(Upgrade.FILTER)) {
                 for (int i = 0; i < ItemSetting.ITEM_COUNT; i++) {
                     if (gui.inBounds(ITEM_X + i * ITEM_OFFSET, ITEM_Y, ITEM_SIZE, ITEM_SIZE, mX, mY)) {
-                        EntityPlayer player = gui.mc.thePlayer;
+                        EntityPlayer player = getPlayer();
                         ItemStack itemStack = player.inventory.getItemStack();
                         if (itemStack == null) {
                             table.setMenu(new GuiMenuItem(table, selectedTransfer.getItem(i)));
@@ -391,6 +393,11 @@ public class PageTransfer extends Page {
         }
 
 
+    }
+
+    @SideOnly(cpw.mods.fml.relauncher.Side.CLIENT)
+    private EntityPlayer getPlayer() {
+        return Minecraft.getMinecraft().thePlayer;
     }
 
     @Override
