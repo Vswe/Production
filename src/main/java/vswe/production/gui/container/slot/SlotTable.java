@@ -21,6 +21,6 @@ public class SlotTable extends SlotBase {
 
     @Override
     public int getTextureIndex(GuiBase gui) {
-        return gui.mc.thePlayer.inventory.getItemStack() == null && !getHasStack() && gui.getSelectedSlot() != null &&  gui.getSelectedSlot() instanceof SlotPlayer && gui.getSelectedSlot().getHasStack() && isItemValid(gui.getSelectedSlot().getStack()) ? 3 : super.getTextureIndex(gui);
+        return gui.mc.thePlayer.inventory.getItemStack() == null && !getHasStack() && gui.getSelectedSlot() != null &&  gui.getSelectedSlot() instanceof SlotPlayer && gui.getSelectedSlot().getHasStack() && isItemValid(gui.getSelectedSlot().getStack()) && getSlotStackLimit(gui.getSelectedSlot().getStack()) > (getHasStack() ? getStack().stackSize : 0) ? 3 : super.getTextureIndex(gui);
     }
 }

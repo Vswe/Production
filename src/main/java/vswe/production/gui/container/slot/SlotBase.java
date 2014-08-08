@@ -100,4 +100,12 @@ public class SlotBase extends Slot {
         return true;
     }
 
+    @Override
+    public int getSlotStackLimit() {
+        return getSlotStackLimit(null);
+    }
+
+    public int getSlotStackLimit(ItemStack item) {
+        return super.getSlotStackLimit();
+    }
 }

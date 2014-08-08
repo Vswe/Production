@@ -59,8 +59,8 @@ public class ContainerTable extends Container {
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int i) {
         ItemStack itemstack = null;
-        Slot slot = (SlotBase)inventorySlots.get(i);
-        if(slot != null && slot.getHasStack() && (!(slot instanceof SlotBase) || ((SlotBase)slot).isVisible())) {
+        SlotBase slot = (SlotBase)inventorySlots.get(i);
+        if(slot != null && slot.getHasStack() && slot.isVisible()) {
             ItemStack slotItem = slot.getStack();
             itemstack = slotItem.copy();
             if(i < table.getSizeInventory()) {
@@ -95,19 +95,19 @@ public class ContainerTable extends Container {
             id = end - 1;
         }
 
-        Slot slot;
+        SlotBase slot;
         ItemStack slotItem;
 
         if (item.isStackable()) {
             while (item.stackSize > 0 && (!invert && id < end || invert && id >= start)) {
                 slot = (SlotBase)this.inventorySlots.get(id);
-                if (!(slot instanceof SlotBase) || ((SlotBase)slot).isVisible()) {
+                if (slot.isVisible()) {
                     slotItem = slot.getStack();
 
                     if (slotItem != null && slotItem.stackSize > 0 && slotItem.getItem() == item.getItem() && (!item.getHasSubtypes() || item.getItemDamage() == slotItem.getItemDamage()) && ItemStack.areItemStackTagsEqual(item, slotItem)) {
                         int size = slotItem.stackSize + item.stackSize;
 
-                        int maxLimit = Math.min(item.getMaxStackSize(), slot.getSlotStackLimit());
+                        int maxLimit = Math.min(item.getMaxStackSize(), slot.getSlotStackLimit(item));
                         if (size <= maxLimit) {
                             item.stackSize = 0;
                             slotItem.stackSize = size;
@@ -141,17 +141,21 @@ public class ContainerTable extends Container {
                 slot = (SlotBase)this.inventorySlots.get(id);
                 slotItem = slot.getStack();
 
-                if (!(slot instanceof SlotBase) || ((SlotBase)slot).isVisible()) {
+                if (slot.isVisible()) {
                     if (slotItem == null && slot.isItemValid(item)) {
-                        int stackSize = Math.min(slot.getSlotStackLimit(), item.stackSize);
-                        ItemStack newItem = item.copy();
-                        newItem.stackSize = stackSize;
-                        item.stackSize -= stackSize;
-                        slot.putStack(newItem);
-                        slot.onSlotChanged();
+                        int stackLimit = slot.getSlotStackLimit(item);
+                        if (stackLimit > 0) {
+                            int stackSize = Math.min(stackLimit, item.stackSize);
 
-                        result = item.stackSize == 0;
-                        break;
+                            ItemStack newItem = item.copy();
+                            newItem.stackSize = stackSize;
+                            item.stackSize -= stackSize;
+                            slot.putStack(newItem);
+                            slot.onSlotChanged();
+
+                            result = item.stackSize == 0;
+                            break;
+                        }
                     }
                 }
 

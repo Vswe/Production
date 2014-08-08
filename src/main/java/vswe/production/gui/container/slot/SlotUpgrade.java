@@ -24,8 +24,19 @@ public class SlotUpgrade extends SlotTable {
 
 
     @Override
-    public int getSlotStackLimit() {
-        return isMain ? 1 : 8;
+    public int getSlotStackLimit(ItemStack item) {
+        if (isMain) {
+            return 1;
+        }else{
+            Upgrade upgrade = ModItems.upgrade.getUpgrade(item);
+            if (upgrade != null) {
+                int count = table.getUpgradePage().getUpgradeCount(upgradeSection, upgrade);
+                return upgrade.getMaxCount() - count;
+            }else{
+                return 8;
+            }
+        }
+
     }
 
     @Override
@@ -70,4 +81,6 @@ public class SlotUpgrade extends SlotTable {
         super.onSlotChanged();
         table.onUpgradeChangeDistribute();
     }
+
+
 }

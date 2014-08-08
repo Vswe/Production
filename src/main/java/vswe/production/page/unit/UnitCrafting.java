@@ -103,6 +103,9 @@ public class UnitCrafting extends Unit {
                     if (false && itemStack.getItem().doesContainerItemLeaveCraftingGrid(itemStack)) {
                         crafting.decrStackSize(id, 1);
                         ItemStack containerItem = itemStack.getItem().getContainerItem(itemStack);
+                        if (!fake) {
+                            table.spitOutItem(containerItem);
+                        }
                     }else{
                         crafting.setInventorySlotContents(id, itemStack.getItem().getContainerItem(itemStack));
                     }

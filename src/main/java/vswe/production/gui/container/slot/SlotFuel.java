@@ -1,6 +1,8 @@
 package vswe.production.gui.container.slot;
 
 
+import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntityFurnace;
 import net.minecraftforge.fluids.FluidContainerRegistry;
@@ -16,5 +18,14 @@ public class SlotFuel extends SlotTable {
     @Override
     public boolean isItemValid(ItemStack itemstack) {
         return super.isItemValid(itemstack) && TileEntityFurnace.isItemFuel(itemstack) && !FluidContainerRegistry.isFilledContainer(itemstack);
+    }
+
+    @Override
+    public int getSlotStackLimit(ItemStack item) {
+        if (item != null && item.getItem().equals(Item.getItemFromBlock(Blocks.crafting_table))) {
+            return 0;
+        }else{
+            return super.getSlotStackLimit(item);
+        }
     }
 }

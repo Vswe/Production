@@ -1,5 +1,6 @@
 package vswe.production.gui.container.slot;
 
+import net.minecraft.item.ItemStack;
 import vswe.production.page.Page;
 import vswe.production.page.unit.Unit;
 import vswe.production.tileentity.TileEntityTable;
@@ -29,4 +30,14 @@ public class SlotUnit extends SlotTable {
         return false;
     }
 
+
+    @Override
+    public int getSlotStackLimit(ItemStack item) {
+        return 0;
+    }
+
+    @Override
+    public int getSlotStackLimit() {
+        return super.getSlotStackLimit(null);
+    }
 }

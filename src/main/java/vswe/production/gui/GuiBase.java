@@ -12,6 +12,7 @@ import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
+import vswe.production.gui.container.slot.SlotBase;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,7 +24,7 @@ public abstract class GuiBase extends GuiContainer {
         super(container);
     }
 
-    private Slot selectedSlot;
+    private SlotBase selectedSlot;
     public boolean shiftMoveRendered;
 
     @Override
@@ -31,7 +32,7 @@ public abstract class GuiBase extends GuiContainer {
         selectedSlot = null;
         shiftMoveRendered = false;
         for (Object obj : inventorySlots.inventorySlots) {
-            Slot slot = (Slot)obj;
+            SlotBase slot = (SlotBase)obj;
             if (func_146978_c(slot.xDisplayPosition, slot.yDisplayPosition, 16, 16, x, y)) {
                 selectedSlot = slot;
                 break;
@@ -42,7 +43,7 @@ public abstract class GuiBase extends GuiContainer {
         super.drawScreen(x, y, f);
     }
 
-    public Slot getSelectedSlot() {
+    public SlotBase getSelectedSlot() {
         return selectedSlot;
     }
 
