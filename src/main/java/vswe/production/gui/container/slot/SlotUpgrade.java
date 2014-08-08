@@ -56,7 +56,7 @@ public class SlotUpgrade extends SlotTable {
         }else{
             Upgrade upgrade = ModItems.upgrade.getUpgrade(getStack());
             if (upgrade != null) {
-                if (table.getUpgradePage().getUpgradeCountRaw(upgradeSection, upgrade) > upgrade.getMaxCount()) {
+                if (table.getUpgradePage().getUpgradeCountRaw(upgradeSection, upgrade) > upgrade.getMaxCount() || !isUpgradeItem(getStack())) {
                     return 4;
                 }
             }

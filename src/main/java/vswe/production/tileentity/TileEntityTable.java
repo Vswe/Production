@@ -1,5 +1,6 @@
 package vswe.production.tileentity;
 
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
@@ -297,6 +298,8 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
     private static final int MOVE_DELAY = 20;
     private boolean lit;
     private boolean lastLit;
+    private int slotTick = 0;
+    private static final int SLOT_DELAY = 10;
 
     @Override
     public void updateEntity() {
@@ -325,6 +328,13 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
                         transfer(setting, side, side.getOutput(), transferSize);
                     }
                 }
+            }
+        }
+
+        if (!worldObj.isRemote && ++slotTick >= SLOT_DELAY) {
+            slotTick = 0;
+            for (SlotBase slot : slots) {
+                slot.updateServer();
             }
         }
     }
@@ -723,7 +733,7 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
         compound.setTag(NBT_SETTINGS, settingList);
 
         compound.setShort(NBT_POWER, (short)power);
-        compound.setShort(NBT_LAVA, (byte)lava);
+        compound.setShort(NBT_LAVA, (byte) lava);
     }
 
     @Override
@@ -776,5 +786,18 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
         lava = compound.getShort(NBT_LAVA);
 
         onUpgradeChange();
+    }
+
+    public void spitOutItem(ItemStack item) {
+        float offsetX = worldObj.rand.nextFloat() * 0.8F + 0.1F;
+        float offsetY = worldObj.rand.nextFloat() * 0.8F + 0.1F;
+        float offsetZ = worldObj.rand.nextFloat() * 0.8F + 0.1F;
+
+        EntityItem entityItem = new EntityItem(worldObj, xCoord + offsetX, yCoord + offsetY, zCoord + offsetZ, item.copy());
+        entityItem.motionX = worldObj.rand.nextGaussian() * 0.05F;
+        entityItem.motionY = worldObj.rand.nextGaussian() * 0.05F + 0.2F;
+        entityItem.motionZ = worldObj.rand.nextGaussian() * 0.05F;
+
+        worldObj.spawnEntityInWorld(entityItem);
     }
 }

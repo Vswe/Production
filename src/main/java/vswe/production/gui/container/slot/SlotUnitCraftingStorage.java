@@ -27,6 +27,6 @@ public class SlotUnitCraftingStorage extends SlotUnit {
 
     @Override
     public boolean canAcceptItems() {
-        return false;
+        return false; //TODO the storage slots can't receive items since the crafting table can't use those slots yet
     }
 }

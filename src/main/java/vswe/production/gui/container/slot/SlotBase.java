@@ -24,13 +24,20 @@ public class SlotBase extends Slot {
         this.table = table;
     }
 
-    public void update(boolean visible) {
+    public void updateClient(boolean visible) {
         if (visible && isEnabled()) {
             xDisplayPosition = getX();
             yDisplayPosition = getY();
         }else{
             xDisplayPosition = -9000;
             yDisplayPosition = -9000;
+        }
+    }
+
+    public void updateServer() {
+        if (!isEnabled() && getHasStack()) {
+            table.spitOutItem(getStack());
+            putStack(null);
         }
     }
 

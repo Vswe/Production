@@ -31,7 +31,7 @@ public class GuiTable extends GuiBase {
             SlotBase slot = (SlotBase)obj;
             slots.add(slot);
 
-            slot.update(slot.isVisible());
+            slot.updateClient(slot.isVisible());
         }
         this.table = table;
     }
@@ -153,7 +153,7 @@ public class GuiTable extends GuiBase {
         prepare();
         for (SlotBase slot : slots) {
             boolean visible = slot.isVisible();
-            slot.update(visible);
+            slot.updateClient(visible);
             if (visible) {
                 boolean isBig = slot.isBig();
                 int srcY = isBig ? SLOT_SIZE + SLOT_SRC_Y : SLOT_SRC_Y;
