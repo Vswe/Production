@@ -9,7 +9,9 @@ import net.minecraft.block.BlockPistonBase;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
@@ -23,8 +25,10 @@ import vswe.production.tileentity.TileEntityTable;
 
 public class BlockTable extends BlockContainer {
     protected BlockTable() {
-        super(Material.iron);
+        super(Material.rock);
         setCreativeTab(CreativeTabProduction.getTab());
+        setHardness(3.5F);
+        setStepSound(soundTypePiston);
     }
 
     @Override
@@ -103,9 +107,33 @@ public class BlockTable extends BlockContainer {
     @Override
     public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase placer, ItemStack item) {
         int rotation = MathHelper.floor_double((placer.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
-        System.out.println(rotation);
         world.setBlockMetadataWithNotify(x, y, z, rotation, 2);
     }
 
+    @Override
+    public void breakBlock(World world, int x, int y, int z, Block block, int meta) {
+        TileEntity te = world.getTileEntity(x, y, z);
 
+        if (te instanceof IInventory) {
+            IInventory inventory = (IInventory)te;
+            for (int i = 0; i < inventory.getSizeInventory(); ++i) {
+                ItemStack item = inventory.getStackInSlotOnClosing(i);
+
+                if (item != null) {
+                    float offsetX = world.rand.nextFloat() * 0.8F + 0.1F;
+                    float offsetY = world.rand.nextFloat() * 0.8F + 0.1F;
+                    float offsetZ = world.rand.nextFloat() * 0.8F + 0.1F;
+
+                    EntityItem entityItem = new EntityItem(world, x + offsetX, y + offsetY, z + offsetZ, item.copy());
+                    entityItem.motionX = world.rand.nextGaussian() * 0.05F;
+                    entityItem.motionY = world.rand.nextGaussian() * 0.05F + 0.2F;
+                    entityItem.motionZ = world.rand.nextGaussian() * 0.05F;
+
+                    world.spawnEntityInWorld(entityItem);
+                }
+            }
+        }
+
+        super.breakBlock(world, x, y, z, block, meta);
+    }
 }
