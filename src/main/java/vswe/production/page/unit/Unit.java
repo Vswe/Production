@@ -71,7 +71,7 @@ public abstract class Unit {
             str.add("Charges: " + chargeCount + "/" + max);
             str.add(EnumChatFormatting.GRAY + "Charges can be consumed to instantly produce an item");
 
-            gui.drawMouseOver(str, mX, mY);
+            gui.drawMouseOver(str);
         }
     }
 

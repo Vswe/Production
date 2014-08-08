@@ -131,7 +131,7 @@ public abstract class GuiBase extends GuiContainer {
         drawItem(item, x + ITEM_ITEM_OFFSET, y + ITEM_ITEM_OFFSET);
 
         if (hover) {
-            drawMouseOver(getItemDescription(item), mX, mY);
+            drawMouseOver(getItemDescription(item));
         }
     }
 
@@ -148,25 +148,34 @@ public abstract class GuiBase extends GuiContainer {
         GL11.glPopMatrix();
     }
 
-    public void drawMouseOver(String str, int x, int y) {
+    public void drawMouseOver(String str) {
         if (str == null) {
             return;
         }
 
         List<String> lst = new ArrayList<String>();
         Collections.addAll(lst, str.split("\n"));
-        drawMouseOver(lst, x, y);
+        drawMouseOver(lst);
     }
 
-    public void drawMouseOver(List<String> str, int x, int y) {
-        if (str == null || str.isEmpty()) {
+    public void drawMouseOver(List<String> str) {
+        this.mouseOver = str;
+    }
+
+    private List<String> mouseOver;
+    public void clearMouseOverCache() {
+        mouseOver = null;
+    }
+
+    public void drawCachedMouseOver(int x, int y) {
+        if (mouseOver == null || mouseOver.isEmpty()) {
             return;
         }
 
 
         int w = 0;
 
-        for (String line : str) {
+        for (String line : mouseOver) {
             int l = fontRendererObj.getStringWidth(line);
 
             if (l > w) {
@@ -178,8 +187,8 @@ public abstract class GuiBase extends GuiContainer {
         y -= 12;
         int h = 8;
 
-        if (str.size() > 1){
-            h += 2 + (str.size() - 1) * 10;
+        if (mouseOver.size() > 1){
+            h += 2 + (mouseOver.size() - 1) * 10;
         }
 
         if (x + w > this.width) {
@@ -206,8 +215,8 @@ public abstract class GuiBase extends GuiContainer {
         this.drawGradientRect(x - 3, y - 3, x + w + 3, y - 3 + 1, border1, border1);
         this.drawGradientRect(x - 3, y + h + 2, x + w + 3, y + h + 3, border2, border2);
         GL11.glDisable(GL11.GL_DEPTH_TEST);
-        for (int i = 0; i < str.size(); i++) {
-            String line = str.get(i);
+        for (int i = 0; i < mouseOver.size(); i++) {
+            String line = mouseOver.get(i);
             fontRendererObj.drawStringWithShadow(line, x, y, -1);
 
             if (i == 0) {

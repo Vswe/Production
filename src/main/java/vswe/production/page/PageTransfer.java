@@ -253,7 +253,7 @@ public class PageTransfer extends Page {
                 if (name == null) {
                     gui.getItemName(item);
                 }
-                gui.drawMouseOver(name, mX, mY);
+                gui.drawMouseOver(name);
             }
         }
 
@@ -271,7 +271,7 @@ public class PageTransfer extends Page {
                 gui.drawBlockIcon(ModBlocks.table.getIconFromSideAndMeta(side.getDirection().ordinal(), 0), side.getX() + SIDE_ITEM_OFFSET, side.getY() + SIDE_ITEM_OFFSET);
 
                 if (hover) {
-                    gui.drawMouseOver(side.getDescription(side == selectedSide), mX, mY);
+                    gui.drawMouseOver(side.getDescription(side == selectedSide));
                 }
             }
 
