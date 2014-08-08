@@ -12,6 +12,6 @@ public class SlotPlayer extends SlotBase {
 
     @Override
     public int getTextureIndex(GuiBase gui) {
-        return gui.mc.thePlayer.inventory.getItemStack() == null && getHasStack() && gui.getSelectedSlot() != null && !gui.getSelectedSlot().getHasStack() &&  gui.getSelectedSlot() instanceof SlotTable && gui.getSelectedSlot().isItemValid(getStack()) ? 3 : super.getTextureIndex(gui); //TODO force the user to hold shift too?
+        return gui.mc.thePlayer.inventory.getItemStack() == null && getHasStack() && gui.getSelectedSlot() != null && !gui.getSelectedSlot().getHasStack() &&  gui.getSelectedSlot() instanceof SlotTable && gui.getSelectedSlot().isItemValid(getStack()) ? 3 : super.getTextureIndex(gui);
     }
 }

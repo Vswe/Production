@@ -5,7 +5,6 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.texture.IIconRegister;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -19,8 +18,6 @@ public enum Upgrade {
     BLANK("Blank Upgrade", "Crafting components for other upgrades", 0, (ParentType)null),
     AUTO_CRAFTER("Auto Crafter", "Convert a crafting table into an auto crafting table", 1, ParentType.CRAFTING),
     STORAGE("Extra Storage", "Adds extra storage", 1, ParentType.CRAFTING),
-    PATTERN("Pattern Crafting", "Remembers old recipes", 4, ParentType.CRAFTING),
-    RESTOCK("Restock Control", "Only produce more items when there isn't enough of them", 1),
     CHARGED("Charger", "Let idle components charge up for later", 8),
     SPEED("Production Speed", "Increase the production speed", 8),
     QUEUE("Input Queue", "Adds an input queue", 3, ParentType.SMELTING),
@@ -31,7 +28,8 @@ public enum Upgrade {
     FILTER("Filter", "Enables transfer filters", 1,  ParentType.GLOBAL),
     TRANSFER("Transfer Capacity", "Increases the automatic transfer capacity", 6, ParentType.GLOBAL);
 
-
+    //PATTERN("Pattern Crafting", "Remembers old recipes", 4, ParentType.CRAFTING), //TODO
+    //RESTOCK("Restock Control", "Only produce more items when there isn't enough of them", 1), //TODO
 
     private String unlocalizedName;
     private String name;

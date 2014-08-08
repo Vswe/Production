@@ -6,9 +6,11 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
-import vswe.production.gui.GuiBase;
 import vswe.production.gui.container.slot.SlotUnit;
+import vswe.production.gui.container.slot.SlotUnitCraftingOutput;
 import vswe.production.gui.container.slot.SlotUnitCraftingResult;
+import vswe.production.gui.container.slot.SlotUnitCraftingStorage;
+import vswe.production.item.Upgrade;
 import vswe.production.page.Page;
 import vswe.production.tileentity.TileEntityTable;
 
@@ -25,21 +27,24 @@ public class UnitCrafting extends Unit {
     private static final int GRID_HEIGHT = 3;
     private static final int RESULT_OFFSET_X = 94;
     private static final int RESULT_OFFSET_Y = 18;
+    public static final int RESULT_AUTO_OFFSET = -5;
+    private static final int STORAGE_COUNT = 6;
+    private static final int STORAGE_Y = 65;
 
-    private static final int ARROW_SRC_X = 0;
-    private static final int ARROW_SRC_Y = 34;
-    private static final int ARROW_WIDTH = 22;
-    private static final int ARROW_HEIGHT = 15;
     private static final int ARROW_X = 61;
     private static final int ARROW_Y = 19;
 
-    private int startId;
+    private int gridId;
     private int resultId;
+    private int outputId;
 
     @Override
     public int createSlots(int id) {
-        startId = id;
+        for (int i = 0; i < STORAGE_COUNT; i++) {
+            addSlot(new SlotUnitCraftingStorage(table, page, id++, this.x + START_X + i * SLOT_SIZE, this.y + STORAGE_Y, this));
+        }
 
+        gridId = id;
         for (int y = 0; y < GRID_HEIGHT; y++) {
             for (int x = 0; x < GRID_WIDTH; x++) {
                 addSlot(new SlotUnit(table, page, id++, this.x + START_X + x * SLOT_SIZE, this.y + START_Y + y * SLOT_SIZE, this));
@@ -49,14 +54,10 @@ public class UnitCrafting extends Unit {
         resultId = id;
         addSlot(new SlotUnitCraftingResult(table, page, id++, this.x + START_X + RESULT_OFFSET_X, this.y + START_Y + RESULT_OFFSET_Y, this));
 
+        outputId = id;
+        addSlot(new SlotUnitCraftingOutput(table, page, id++, this.x + START_X + RESULT_OFFSET_X, this.y + START_Y + 2 * SLOT_SIZE, this));
+
         return id;
-    }
-
-    @Override
-    public void draw(GuiBase gui, int mX, int mY) {
-        super.draw(gui, mX, mY);
-
-        gui.drawRect(this.x + START_X + ARROW_X, this.y + START_Y + ARROW_Y, ARROW_SRC_X, ARROW_SRC_Y, ARROW_WIDTH, ARROW_HEIGHT);
     }
 
     @Override
@@ -75,12 +76,27 @@ public class UnitCrafting extends Unit {
         table.setInventorySlotContents(resultId, result);
     }
 
+    @Override
+    protected boolean canCharge() {
+        return super.canCharge() && table.getUpgradePage().hasUpgrade(id, Upgrade.AUTO_CRAFTER);
+    }
 
-    //TODO make sure this is called properly when hoppers are extracting the items (to be honest, they probably won't work as they are now)
-    //TODO handle container items properly
     public void onCrafting() {
         for (int i = 0; i < inventoryCrafting.getSizeInventory(); i++) {
-            inventoryCrafting.decrStackSize(i, 1);
+            ItemStack itemStack = inventoryCrafting.getStackInSlot(i);
+            if (itemStack != null && itemStack.getItem() != null) {
+                if (itemStack.getItem().hasContainerItem(itemStack)) {
+                    //TODO where should the container go?
+                    if (false && itemStack.getItem().doesContainerItemLeaveCraftingGrid(itemStack)) {
+                        inventoryCrafting.decrStackSize(i, 1);
+                        ItemStack containerItem = itemStack.getItem().getContainerItem(itemStack);
+                    }else{
+                       inventoryCrafting.setInventorySlotContents(i, itemStack.getItem().getContainerItem(itemStack));
+                    }
+                }else{
+                    inventoryCrafting.decrStackSize(i, 1);
+                }
+            }
         }
     }
 
@@ -101,7 +117,7 @@ public class UnitCrafting extends Unit {
 
         @Override
         public ItemStack getStackInSlot(int id) {
-            return table.getStackInSlot(startId + id);
+            return table.getStackInSlot(gridId + id);
         }
 
 
@@ -118,18 +134,18 @@ public class UnitCrafting extends Unit {
 
         @Override
         public ItemStack getStackInSlotOnClosing(int id) {
-            return table.getStackInSlotOnClosing(startId + id);
+            return table.getStackInSlotOnClosing(gridId + id);
         }
 
         @Override
         public ItemStack decrStackSize(int id, int count) {
-            return table.decrStackSize(startId + id, count);
+            return table.decrStackSize(gridId + id, count);
         }
 
 
         @Override
         public void setInventorySlotContents(int id, ItemStack item) {
-            table.setInventorySlotContents(startId + id, item);
+            table.setInventorySlotContents(gridId + id, item);
         }
 
         public ItemStack getResult() {
@@ -149,5 +165,40 @@ public class UnitCrafting extends Unit {
             return null;
         }
 
+    }
+
+
+    @Override
+    protected int getArrowX() {
+        return START_X + ARROW_X;
+    }
+
+    @Override
+    protected int getArrowY() {
+        int offset = 0;
+        if (table.getUpgradePage().hasUpgrade(id, Upgrade.AUTO_CRAFTER)) {
+            offset = RESULT_AUTO_OFFSET;
+        }
+        return START_Y + ARROW_Y + offset;
+    }
+
+    @Override
+    protected ItemStack getProductionResult() {
+        if (table.getUpgradePage().hasUpgrade(id, Upgrade.AUTO_CRAFTER)) {
+            return table.getStackInSlot(resultId);
+        }else{
+            return null;
+        }
+    }
+
+    @Override
+    protected int getOutputId() {
+        return outputId;
+    }
+
+    @Override
+    protected void onProduction() {
+        onCrafting();
+        onSlotChanged();
     }
 }

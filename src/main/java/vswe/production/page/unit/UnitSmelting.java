@@ -5,13 +5,12 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
-import vswe.production.gui.GuiBase;
-import vswe.production.gui.container.slot.SlotUnit;
 import vswe.production.gui.container.slot.SlotUnitFurnaceInput;
+import vswe.production.gui.container.slot.SlotUnitFurnaceQueue;
 import vswe.production.gui.container.slot.SlotUnitFurnaceResult;
+import vswe.production.item.Upgrade;
 import vswe.production.page.Page;
 import vswe.production.tileentity.TileEntityTable;
-import vswe.production.network.data.DataType;
 
 public class UnitSmelting extends Unit {
 
@@ -22,10 +21,15 @@ public class UnitSmelting extends Unit {
 
     private int inputId;
     private int outputId;
+    private int queueId;
 
-    private static final int START_X = 23;
+    private static final int QUEUE_MAX_COUNT = 3;
+    private static final int QUEUE_X = 5;
+    private static final int QUEUE_Y = 5;
+    private static final int START_X = 25;
     private static final int START_Y = 23;
     private static final int RESULT_X = 56;
+    private static final int SLOT_SIZE = 18;
 
     @Override
     public int createSlots(int id) {
@@ -34,7 +38,52 @@ public class UnitSmelting extends Unit {
         outputId = id;
         addSlot(new SlotUnitFurnaceResult(table, page, id++, this.x + START_X + RESULT_X, this.y + START_Y, this));
 
+        queueId = id;
+        for (int i = 0; i < QUEUE_MAX_COUNT; i++) {
+            addSlot(new SlotUnitFurnaceQueue(table, page, id++, this.x + QUEUE_X, this.y + QUEUE_Y + i * SLOT_SIZE, this, QUEUE_ORDER[i]));
+        }
+
         return id;
+    }
+
+    private static final int[] QUEUE_ORDER = {2, 0, 1};
+    private static final int[] QUEUE_ORDER_START = {1, 1, 0};
+
+    @Override
+    public void onUpdate() {
+        super.onUpdate();
+
+        int queueLength = table.getUpgradePage().getUpgradeCount(id, Upgrade.QUEUE);
+        if (queueLength > 0) {
+            int start = QUEUE_ORDER_START[queueLength - 1];
+            for (int i = start + queueLength - 1; i >= start; i--) {
+                int targetId;
+                if (i == start + queueLength - 1) {
+                    targetId = inputId;
+                }else{
+                    targetId = queueId + i + 1;
+                }
+                int sourceId = queueId + i;
+
+                ItemStack target = table.getStackInSlot(targetId);
+                ItemStack source = table.getStackInSlot(sourceId);
+                if (source != null) {
+                    ItemStack move = source.copy();
+                    move.stackSize = 1;
+                    if (canMove(move, target)) {
+                        if (target == null) {
+                            table.setInventorySlotContents(targetId, move);
+                        }else{
+                            target.stackSize++;
+                        }
+                        source.stackSize--;
+                        if (source.stackSize == 0) {
+                            table.setInventorySlotContents(sourceId, null);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -42,57 +91,20 @@ public class UnitSmelting extends Unit {
 
     }
 
-    private static final int SMELT_TIME = 200; //TODO use the same speed as vanilla or not?
-    private int smeltingProgress;
-
     @Override
-    public void onUpdate() {
-        if (!table.getWorldObj().isRemote) {
-            boolean updatedProgress = false;
-
-            ItemStack input = table.getStackInSlot(inputId);
-            if (input != null) {
-                ItemStack output = table.getStackInSlot(outputId);
-                ItemStack result = FurnaceRecipes.smelting().getSmeltingResult(input);
-                if (table.getPower() > 0 && canSmelt(result, output)) {
-                    table.setPower(table.getPower() - 1);
-                    smeltingProgress++;
-                    if (smeltingProgress >= SMELT_TIME) {
-                        smeltingProgress = 0;
-                        if (output == null) {
-                            table.setInventorySlotContents(outputId, result.copy());
-                        }else{
-                            table.getStackInSlot(outputId).stackSize += result.stackSize;
-                        }
-
-                        table.decrStackSize(inputId, 1);
-                    }
-                    updatedProgress = true;
-                }
-            }else if (smeltingProgress != 0){
-                smeltingProgress = 0;
-                updatedProgress = true;
-            }
-
-            if (updatedProgress) {
-                table.sendDataToAllPlayer(DataType.SMELT, this.id);
-            }
-        }
+    protected ItemStack getProductionResult() {
+        ItemStack input = table.getStackInSlot(inputId);
+        return input == null ? null : FurnaceRecipes.smelting().getSmeltingResult(input);
     }
 
-    private boolean canSmelt(ItemStack result, ItemStack output) {
-        if (result != null) {
-            if (output == null) {
-                return true;
-            }else if(output.isItemEqual(result)){
-                int resultSize = output.stackSize + result.stackSize;
-                if (resultSize <= table.getInventoryStackLimit() && resultSize <= output.getMaxStackSize()) {
-                    return true;
-                }
-            }
-        }
+    @Override
+    protected void onProduction() {
+        table.decrStackSize(inputId, 1);
+    }
 
-        return false;
+    @Override
+    public int getOutputId() {
+        return outputId;
     }
 
     @Override
@@ -102,27 +114,17 @@ public class UnitSmelting extends Unit {
         return item != null && Item.getItemFromBlock(Blocks.furnace) == item.getItem();
     }
 
-    public int getSmeltingProgress() {
-        return smeltingProgress;
-    }
 
-    public void setSmeltingProgress(int smeltingProgress) {
-        this.smeltingProgress = smeltingProgress;
-    }
-
-    private static final int ARROW_SRC_X = 0;
-    private static final int ARROW_SRC_Y = 34;
-    private static final int ARROW_WIDTH = 22;
-    private static final int ARROW_HEIGHT = 15;
     private static final int ARROW_X = 25;
     private static final int ARROW_Y = 1;
-    private static final int PROGRESS_OFFSET = -1;
 
     @Override
-    public void draw(GuiBase gui, int mX, int mY) {
-        super.draw(gui, mX, mY);
+    public int getArrowX() {
+        return START_X + ARROW_X;
+    }
 
-        gui.drawRect(this.x + START_X + ARROW_X, this.y + START_Y + ARROW_Y, ARROW_SRC_X, ARROW_SRC_Y, ARROW_WIDTH, ARROW_HEIGHT);
-        gui.drawRect(this.x + START_X + ARROW_X, this.y + START_Y + ARROW_Y + PROGRESS_OFFSET, ARROW_SRC_X, ARROW_SRC_Y + ARROW_HEIGHT, smeltingProgress * ARROW_WIDTH / SMELT_TIME, ARROW_HEIGHT);
+    @Override
+    public int getArrowY() {
+        return START_Y + ARROW_Y;
     }
 }

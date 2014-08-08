@@ -94,7 +94,7 @@ public class Side {
                 if (transfer.hasWhiteList()) {
                     lst.add(EnumChatFormatting.GRAY + name + " Filter: " + EnumChatFormatting.WHITE + "White list");
                 }else{
-                    lst.add(EnumChatFormatting.GRAY + name + " Filter: " + EnumChatFormatting.BLACK + "Black list");
+                    lst.add(EnumChatFormatting.GRAY + name + " Filter: " + EnumChatFormatting.DARK_GRAY + "Black list");
                 }
             }
         }else{

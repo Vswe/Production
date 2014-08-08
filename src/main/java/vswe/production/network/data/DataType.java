@@ -9,7 +9,7 @@ import vswe.production.tileentity.TileEntityTable;
 
 public enum DataType {
     PAGE(DataPage.class),
-    SMELT(DataSmelting.class, 4),
+    PROGRESS(DataUnit.Progress.class, DataUnit.LENGTH),
     POWER(DataFuel.class),
     SIDE_ENABLED(DataSide.Enabled.class, DataSide.LENGTH),
     SIDE_AUTO(DataSide.Auto.class, DataSide.LENGTH),
@@ -17,7 +17,8 @@ public enum DataType {
     SIDE_WHITE_LIST(DataSide.WhiteList.class, DataSide.LENGTH),
     SIDE_FILTER_MODE(DataSide.FilterMode.class, DataSide.FilterBase.LENGTH),
     LAVA(DataLava.class),
-    LIT(DataLit.class);
+    LIT(DataLit.class),
+    CHARGED(DataUnit.Charged.class, DataUnit.LENGTH);
 
     private IBitCount lengthBits;
     private int length;

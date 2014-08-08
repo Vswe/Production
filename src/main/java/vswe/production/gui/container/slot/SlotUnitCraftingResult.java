@@ -2,6 +2,7 @@ package vswe.production.gui.container.slot;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import vswe.production.item.Upgrade;
 import vswe.production.page.Page;
 import vswe.production.page.unit.UnitCrafting;
 import vswe.production.tileentity.TileEntityTable;
@@ -29,14 +30,17 @@ public class SlotUnitCraftingResult extends SlotUnit {
     }
 
     @Override
-    public boolean canSupplyItems() {
-        return true;
-    }
-
-    @Override
     public boolean canAcceptItems() {
         return false;
     }
 
 
+    @Override
+    public int getY() {
+        int offset = 0;
+        if (table.getUpgradePage().hasUpgrade(unit.getId(), Upgrade.AUTO_CRAFTER)) {
+            offset = UnitCrafting.RESULT_AUTO_OFFSET;
+        }
+        return super.getY() + offset;
+    }
 }

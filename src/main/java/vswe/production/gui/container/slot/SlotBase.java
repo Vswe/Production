@@ -26,8 +26,8 @@ public class SlotBase extends Slot {
 
     public void update(boolean visible) {
         if (visible && isEnabled()) {
-            xDisplayPosition = x;
-            yDisplayPosition = y;
+            xDisplayPosition = getX();
+            yDisplayPosition = getY();
         }else{
             xDisplayPosition = -9000;
             yDisplayPosition = -9000;
