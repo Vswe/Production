@@ -37,6 +37,7 @@ public abstract class GuiBase extends GuiContainer {
                 break;
             }
         }
+        clearMouseOverCache();
 
         super.drawScreen(x, y, f);
     }
@@ -167,6 +168,11 @@ public abstract class GuiBase extends GuiContainer {
         mouseOver = null;
     }
 
+    @Override
+    protected void drawGuiContainerForegroundLayer(int mX, int mY) {
+        drawCachedMouseOver(mX - guiLeft, mY - guiTop);
+    }
+
     public void drawCachedMouseOver(int x, int y) {
         if (mouseOver == null || mouseOver.isEmpty()) {
             return;
@@ -191,12 +197,12 @@ public abstract class GuiBase extends GuiContainer {
             h += 2 + (mouseOver.size() - 1) * 10;
         }
 
-        if (x + w > this.width) {
+        if (guiLeft + x + w > this.width) {
             x -= 28 + w;
         }
 
-        if (y + h + 6 > this.height) {
-            y = this.height - h - 6;
+        if (guiTop + y + h + 6 > this.height) {
+            y = this.height - h - 6 - guiTop;
         }
 
         GL11.glPushMatrix();

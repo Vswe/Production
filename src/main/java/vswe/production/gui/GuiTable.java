@@ -37,11 +37,6 @@ public class GuiTable extends GuiBase {
     }
 
     @Override
-    protected void drawGuiContainerForegroundLayer(int mX, int mY) {
-        drawCachedMouseOver(mX - guiLeft, mY - guiTop);
-    }
-
-    @Override
     protected void drawGuiContainerBackgroundLayer(float f, int mX, int mY) {
         GL11.glPushMatrix();
         GL11.glTranslatef(guiLeft, guiTop, 0);
@@ -50,8 +45,6 @@ public class GuiTable extends GuiBase {
 
         mc.getTextureManager().bindTexture(BACKGROUND);
         drawTexturedModalRect(0, 0, 0, 0, xSize, ySize);
-
-        clearMouseOverCache();
 
         drawSlots();
         if (table.getMenu() == null) {
