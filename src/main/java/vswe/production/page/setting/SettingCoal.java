@@ -1,7 +1,10 @@
 package vswe.production.page.setting;
 
+import cpw.mods.fml.relauncher.*;
+import cpw.mods.fml.relauncher.Side;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import vswe.production.gui.GuiBase;
 import vswe.production.gui.container.slot.SlotBase;
 import vswe.production.tileentity.TileEntityTable;
 
@@ -27,5 +30,10 @@ public class SettingCoal extends Setting {
         List<SlotBase> slots = new ArrayList<SlotBase>();
         slots.add(table.getSlots().get(0));
         return slots;
+    }
+
+    @Override
+    public String getName() {
+        return "Fuel";
     }
 }

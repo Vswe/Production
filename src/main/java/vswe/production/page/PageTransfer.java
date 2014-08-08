@@ -238,18 +238,28 @@ public class PageTransfer extends Page {
                 }
             }
 
-            int textureIndexX = isValid && gui.inBounds(setting.getX(), setting.getY(), SETTING_SIZE, SETTING_SIZE, mX, mY) ? 1 : 0;
+            boolean hover = gui.inBounds(setting.getX(), setting.getY(), SETTING_SIZE, SETTING_SIZE, mX, mY);
+            int textureIndexX = isValid && hover ? 1 : 0;
             int textureIndexY = isValid ? isSelected ? 1 : 0 : 2;
 
-
+            ItemStack item = setting.getItem();
             gui.drawRect(setting.getX(), setting.getY(), SETTING_SRC_X + textureIndexX * SETTING_SIZE, SETTING_SRC_Y + textureIndexY * SETTING_SIZE, SETTING_SIZE, SETTING_SIZE);
-            gui.drawItem(setting.getItem(), setting.getX() + SETTING_ITEM_OFFSET, setting.getY() + SETTING_ITEM_OFFSET);
+            gui.drawItem(item, setting.getX() + SETTING_ITEM_OFFSET, setting.getY() + SETTING_ITEM_OFFSET);
+
+            if (hover && isValid) {
+                String name = setting.getName();
+                if (name == null) {
+                    gui.getItemName(item);
+                }
+                gui.drawMouseOver(name, mX, mY);
+            }
         }
 
         if (selectedSetting != null) {
             for (Side side : selectedSetting.getSides()) {
                 gui.prepare();
-                int textureIndexX = side.equals(selectedSide) ? 2 : gui.inBounds(side.getX(), side.getY(), SIDE_SIZE, SIDE_SIZE, mX, mY) ? 1 : 0;
+                boolean hover = gui.inBounds(side.getX(), side.getY(), SIDE_SIZE, SIDE_SIZE, mX, mY);
+                int textureIndexX = side.equals(selectedSide) ? 2 : hover ? 1 : 0;
                 boolean output = side.isOutputEnabled();
                 boolean input = side.isInputEnabled();
                 int textureIndexY = output && input ? 3 : output ? 2 : input ? 1 : 0;
@@ -257,6 +267,10 @@ public class PageTransfer extends Page {
 
                 gui.drawRect(side.getX(), side.getY(), SIDE_SRC_X + textureIndexX * SIDE_SIZE, SIDE_SRC_Y + textureIndexY * SIDE_SIZE, SIDE_SIZE, SIDE_SIZE);
                 gui.drawBlockIcon(ModBlocks.table.getIconFromSideAndMeta(side.getDirection().ordinal(), 0), side.getX() + SIDE_ITEM_OFFSET, side.getY() + SIDE_ITEM_OFFSET);
+
+                if (hover) {
+                    gui.drawMouseOver(side.getDescription(side == selectedSide), mX, mY);
+                }
             }
 
             if (selectedTransfer != null && table.getUpgradePage().hasGlobalUpgrade(Upgrade.FILTER)) {

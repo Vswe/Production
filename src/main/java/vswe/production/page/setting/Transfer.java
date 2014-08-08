@@ -71,4 +71,16 @@ public class Transfer {
 
         return !useWhiteList;
     }
+
+    public boolean hasFilter(TileEntityTable table) {
+        if (table.getUpgradePage().hasGlobalUpgrade(Upgrade.FILTER)) {
+            for (ItemSetting item : items) {
+                if (item.getItem() != null) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }

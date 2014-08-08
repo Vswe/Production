@@ -30,4 +30,9 @@ public class SettingNormal extends Setting{
 
         return unit.getSlots();
     }
+
+    @Override
+    public String getName() {
+        return null;
+    }
 }

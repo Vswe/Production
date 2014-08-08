@@ -1,5 +1,11 @@
 package vswe.production.page.setting;
 
+import net.minecraft.util.EnumChatFormatting;
+import vswe.production.item.Upgrade;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class Side {
     private int x;
     private int y;
@@ -56,5 +62,43 @@ public class Side {
 
     public Transfer getInput() {
         return input;
+    }
+
+    public List<String> getDescription(boolean selected) {
+        List<String> str = new ArrayList<String>();
+        str.add(direction.getName());
+
+        String description = direction.getDescription();
+        if (description != null) {
+            str.add(EnumChatFormatting.GRAY + description);
+        }
+        if (selected) {
+            str.add(EnumChatFormatting.YELLOW + "Selected");
+        }
+
+        str.add("");
+        addTransferInfo(str, input, EnumChatFormatting.BLUE);
+        addTransferInfo(str, output, EnumChatFormatting.RED);
+
+        return str;
+    }
+
+    private void addTransferInfo(List<String> lst, Transfer transfer, EnumChatFormatting color) {
+        String name = transfer.isInput() ? "Input" : "Output";
+        if (transfer.isEnabled()) {
+            lst.add(color + name + ": Enabled");
+            if (transfer.isAuto() && setting.table.getUpgradePage().hasGlobalUpgrade(Upgrade.AUTO_TRANSFER)) {
+                lst.add(EnumChatFormatting.GRAY + name + " Transfer: " + EnumChatFormatting.GREEN + "Auto");
+            }
+            if (transfer.hasFilter(setting.table)) {
+                if (transfer.hasWhiteList()) {
+                    lst.add(EnumChatFormatting.GRAY + name + " Filter: " + EnumChatFormatting.WHITE + "White list");
+                }else{
+                    lst.add(EnumChatFormatting.GRAY + name + " Filter: " + EnumChatFormatting.BLACK + "Black list");
+                }
+            }
+        }else{
+            lst.add(EnumChatFormatting.GRAY + name + ": Disabled");
+        }
     }
 }

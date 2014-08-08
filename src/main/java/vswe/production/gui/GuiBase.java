@@ -1,5 +1,6 @@
 package vswe.production.gui;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.RenderHelper;
@@ -121,12 +122,17 @@ public abstract class GuiBase extends GuiContainer {
     private static final int ITEM_ITEM_OFFSET = 1;
 
     public void drawItemWithBackground(ItemStack item, int x, int y, int mX, int mY) {
-        int textureIndexX = inBounds(x, y, ITEM_SIZE, ITEM_SIZE, mX, mY) ? 1 : 0;
+        boolean hover = inBounds(x, y, ITEM_SIZE, ITEM_SIZE, mX, mY);
+        int textureIndexX = hover ? 1 : 0;
         int textureIndexY = item != null ? 1 : 0;
 
         prepare();
         drawRect(x, y, ITEM_SRC_X + textureIndexX * ITEM_SIZE, ITEM_SRC_Y + textureIndexY * ITEM_SIZE, ITEM_SIZE, ITEM_SIZE);
         drawItem(item, x + ITEM_ITEM_OFFSET, y + ITEM_ITEM_OFFSET);
+
+        if (hover) {
+            drawMouseOver(getItemDescription(item), mX, mY);
+        }
     }
 
     public int getStringWidth(String str) {
@@ -143,13 +149,20 @@ public abstract class GuiBase extends GuiContainer {
     }
 
     public void drawMouseOver(String str, int x, int y) {
+        if (str == null) {
+            return;
+        }
+
         List<String> lst = new ArrayList<String>();
         Collections.addAll(lst, str.split("\n"));
         drawMouseOver(lst, x, y);
     }
 
     public void drawMouseOver(List<String> str, int x, int y) {
-        GL11.glDisable(GL11.GL_DEPTH_TEST);
+        if (str == null || str.isEmpty()) {
+            return;
+        }
+
 
         int w = 0;
 
@@ -177,6 +190,8 @@ public abstract class GuiBase extends GuiContainer {
             y = this.height - h - 6;
         }
 
+        GL11.glPushMatrix();
+        GL11.glTranslatef(0, 0, 300);
         this.zLevel = 300.0F;
         int bg = -267386864;
         this.drawGradientRect(x - 3, y - 4, x + w + 3, y - 3, bg, bg);
@@ -190,7 +205,7 @@ public abstract class GuiBase extends GuiContainer {
         this.drawGradientRect(x + w + 2, y - 3 + 1, x + w + 3, y + h + 3 - 1, border1, border2);
         this.drawGradientRect(x - 3, y - 3, x + w + 3, y - 3 + 1, border1, border1);
         this.drawGradientRect(x - 3, y + h + 2, x + w + 3, y + h + 3, border2, border2);
-
+        GL11.glDisable(GL11.GL_DEPTH_TEST);
         for (int i = 0; i < str.size(); i++) {
             String line = str.get(i);
             fontRendererObj.drawStringWithShadow(line, x, y, -1);
@@ -203,7 +218,34 @@ public abstract class GuiBase extends GuiContainer {
         }
 
         this.zLevel = 0.0F;
+        GL11.glPopMatrix();
         GL11.glEnable(GL11.GL_DEPTH_TEST);
         GL11.glColor4f(1F, 1F, 1F, 1F);
+    }
+
+    public String getItemName(ItemStack item) {
+        if (item == null || item.getItem() == null) {
+            return null;
+        }
+
+        try {
+            //noinspection unchecked
+            return item.getDisplayName();
+        }catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    public List<String> getItemDescription(ItemStack item) {
+        if (item == null || item.getItem() == null) {
+            return null;
+        }
+
+        try {
+            //noinspection unchecked
+            return item.getTooltip(Minecraft.getMinecraft().thePlayer, Minecraft.getMinecraft().gameSettings.advancedItemTooltips);
+        }catch (Throwable ignored) {
+            return null;
+        }
     }
 }

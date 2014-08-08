@@ -1,6 +1,8 @@
 package vswe.production.page.setting;
 
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.item.ItemStack;
+import vswe.production.gui.GuiBase;
 import vswe.production.gui.container.slot.SlotBase;
 import vswe.production.tileentity.TileEntityTable;
 
@@ -45,4 +47,6 @@ public abstract class Setting {
     }
 
     public abstract List<SlotBase> getSlots();
+
+    public abstract String getName();
 }
