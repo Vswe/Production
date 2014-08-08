@@ -4,6 +4,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityFurnace;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -30,6 +32,7 @@ import vswe.production.page.setting.Setting;
 import vswe.production.page.setting.Side;
 import vswe.production.page.setting.Transfer;
 import vswe.production.network.data.DataType;
+import vswe.production.page.unit.Unit;
 import vswe.production.page.unit.UnitCrafting;
 
 import java.util.ArrayList;
@@ -273,6 +276,7 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
                 for (DataType dataType : DataType.values()) {
                     dataType.load(this, dr, true);
                 }
+                onUpgradeChange();
                 break;
             case TYPE:
                 DataType dataType = dr.readEnum(DataType.class);
@@ -506,7 +510,7 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
         }
     }
 
-    private void onUpgradeChange() {
+    public void onUpgradeChange() {
         reloadTransferSides();
         getUpgradePage().onUpgradeChange();
         for (UnitCrafting crafting : getMainPage().getCraftingList()) {
@@ -659,5 +663,118 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
 
     public void setLit(boolean lit) {
         this.lit = lit;
+    }
+
+
+    private static final String NBT_ITEMS = "Items";
+    private static final String NBT_UNITS = "Units";
+    private static final String NBT_SETTINGS = "Settings";
+    private static final String NBT_SIDES = "Sides";
+    private static final String NBT_INPUT = "Input";
+    private static final String NBT_OUTPUT = "Output";
+    private static final String NBT_SLOT = "Slot";
+    private static final String NBT_POWER = "Power";
+    private static final String NBT_LAVA = "LavaLevel";
+    private static final int COMPOUND_ID = 10;
+
+    @Override
+    public void writeToNBT(NBTTagCompound compound) {
+        super.writeToNBT(compound);
+
+        NBTTagList itemList = new NBTTagList();
+        for (int i = 0; i < items.length; i++) {
+            if (items[i] != null) {
+                NBTTagCompound slotCompound = new NBTTagCompound();
+                slotCompound.setByte(NBT_SLOT, (byte) i);
+                items[i].writeToNBT(slotCompound);
+                itemList.appendTag(slotCompound);
+            }
+        }
+        compound.setTag(NBT_ITEMS, itemList);
+
+        NBTTagList unitList = new NBTTagList();
+        for (Unit unit : getMainPage().getUnits()) {
+            NBTTagCompound unitCompound = new NBTTagCompound();
+            unit.writeToNBT(unitCompound);
+            unitList.appendTag(unitCompound);
+        }
+        compound.setTag(NBT_UNITS, unitList);
+
+        NBTTagList settingList = new NBTTagList();
+        for (Setting setting : getTransferPage().getSettings()) {
+            NBTTagCompound settingCompound = new NBTTagCompound();
+
+            NBTTagList sideList = new NBTTagList();
+            for (Side side : setting.getSides()) {
+                NBTTagCompound sideCompound = new NBTTagCompound();
+                NBTTagCompound inputCompound = new NBTTagCompound();
+                NBTTagCompound outputCompound = new NBTTagCompound();
+
+                side.getInput().writeToNBT(inputCompound);
+                side.getOutput().writeToNBT(outputCompound);
+
+                sideCompound.setTag(NBT_INPUT, inputCompound);
+                sideCompound.setTag(NBT_OUTPUT, outputCompound);
+                sideList.appendTag(sideCompound);
+            }
+            settingCompound.setTag(NBT_SIDES, sideList);
+            settingList.appendTag(settingCompound);
+        }
+        compound.setTag(NBT_SETTINGS, settingList);
+
+        compound.setShort(NBT_POWER, (short)power);
+        compound.setShort(NBT_LAVA, (byte)lava);
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound compound) {
+        super.readFromNBT(compound);
+
+        items = new ItemStack[getSizeInventory()];
+
+        NBTTagList itemList = compound.getTagList(NBT_ITEMS, COMPOUND_ID);
+        for (int i = 0; i < itemList.tagCount(); i++) {
+            NBTTagCompound slotCompound = itemList.getCompoundTagAt(i);
+            int id = slotCompound.getByte(NBT_SLOT);
+            if (id < 0) {
+                id += 256;
+            }
+
+            if (id >= 0 && id < items.length) {
+                items[id] = ItemStack.loadItemStackFromNBT(slotCompound);
+            }
+        }
+
+        NBTTagList unitList = compound.getTagList(NBT_UNITS, COMPOUND_ID);
+        List<Unit> units = getMainPage().getUnits();
+        for (int i = 0; i < units.size(); i++) {
+            Unit unit = units.get(i);
+            NBTTagCompound unitCompound = unitList.getCompoundTagAt(i);
+            unit.readFromNBT(unitCompound);
+        }
+
+
+        NBTTagList settingList = compound.getTagList(NBT_SETTINGS, COMPOUND_ID);
+        List<Setting> settings = getTransferPage().getSettings();
+        for (int i = 0; i < settings.size(); i++) {
+            Setting setting = settings.get(i);
+            NBTTagCompound settingCompound = settingList.getCompoundTagAt(i);
+            NBTTagList sideList = settingCompound.getTagList(NBT_SIDES, COMPOUND_ID);
+            List<Side> sides = setting.getSides();
+            for (int j = 0; j < sides.size(); j++) {
+                Side side = sides.get(j);
+                NBTTagCompound sideCompound = sideList.getCompoundTagAt(j);
+                NBTTagCompound inputCompound = sideCompound.getCompoundTag(NBT_INPUT);
+                NBTTagCompound outputCompound = sideCompound.getCompoundTag(NBT_OUTPUT);
+
+                side.getInput().readFromNBT(inputCompound);
+                side.getOutput().readFromNBT(outputCompound);
+            }
+        }
+
+        power = compound.getShort(NBT_POWER);
+        lava = compound.getShort(NBT_LAVA);
+
+        onUpgradeChange();
     }
 }

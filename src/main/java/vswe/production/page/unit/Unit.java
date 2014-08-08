@@ -4,6 +4,7 @@ package vswe.production.page.unit;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import org.lwjgl.opengl.GL11;
 import vswe.production.gui.GuiBase;
@@ -251,5 +252,17 @@ public abstract class Unit {
     private List<SlotBase> slots = new ArrayList<SlotBase>();
     public List<SlotBase> getSlots() {
         return slots;
+    }
+
+    private static final String NBT_CHARGED = "Charged";
+    private static final String NBT_PROGRESS = "Progress";
+    public void writeToNBT(NBTTagCompound compound) {
+        compound.setByte(NBT_CHARGED, (byte)chargeCount);
+        compound.setShort(NBT_PROGRESS, (short)productionProgress);
+    }
+
+    public void readFromNBT(NBTTagCompound compound) {
+        chargeCount = compound.getByte(NBT_CHARGED);
+        productionProgress = compound.getShort(NBT_PROGRESS);
     }
 }
