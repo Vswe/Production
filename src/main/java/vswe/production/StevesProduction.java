@@ -25,8 +25,8 @@ public class StevesProduction {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         packetHandler = NetworkRegistry.INSTANCE.newEventDrivenChannel(CHANNEL);
-        ModBlocks.init();
         ModItems.init();
+        ModBlocks.init();
     }
 
     @Mod.EventHandler

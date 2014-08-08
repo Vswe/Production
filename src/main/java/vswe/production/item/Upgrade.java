@@ -15,7 +15,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 public enum Upgrade {
-    BLANK("Blank Upgrade", "Crafting components for other upgrades", 0, (ParentType)null),
+    BLANK("Blank Upgrade", "Crafting component", 0, (ParentType)null),
     AUTO_CRAFTER("Auto Crafter", "Convert a crafting table into an auto crafting table", 1, ParentType.CRAFTING),
     STORAGE("Extra Storage", "Adds extra storage", 1, ParentType.CRAFTING),
     CHARGED("Charger", "Let idle components charge up for later", 8),
