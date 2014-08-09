@@ -31,7 +31,7 @@ public class SlotUpgrade extends SlotTable {
             Upgrade upgrade = ModItems.upgrade.getUpgrade(item);
             if (upgrade != null) {
                 int count = table.getUpgradePage().getUpgradeCount(upgradeSection, upgrade);
-                return upgrade.getMaxCount() - count;
+                return upgrade.getMaxCount() - count + (getStack() != null ? getStack().stackSize : 0);
             }else{
                 return 8;
             }

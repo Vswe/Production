@@ -1,0 +1,15 @@
+[
+{
+  "modid": "StevesWorkshop",
+  "name": "Steve's Workshop",
+  "description": "Adds a modular production table for crafting and smelting",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "authorList": [
+"Vswe"
+],
+  "credits": "Thanks to CyanideX for the block and item icons",
+  "screenshots": [],
+  "dependencies": []
+}
+]

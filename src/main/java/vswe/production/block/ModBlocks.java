@@ -3,9 +3,6 @@ package vswe.production.block;
 
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.LanguageRegistry;
-import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import vswe.production.creativetab.CreativeTabProduction;
 import vswe.production.item.Upgrade;
@@ -21,14 +18,12 @@ public final class ModBlocks {
     private static final String COBBLE = "cobblestone";
 
     public static void init() {
-        CreativeTabProduction tab = new CreativeTabProduction();
-
         table = new BlockTable();
         GameRegistry.registerBlock(table, UNLOCALIZED_NAME);
         GameRegistry.registerTileEntity(TileEntityTable.class, UNLOCALIZED_NAME);
         LanguageRegistry.addName(table, LOCALIZED_NAME);
 
-        tab.init(table);
+        CreativeTabProduction.getTab().init(table);
 
         GameRegistry.addRecipe(new ShapedOreRecipe(table, "PPP", "CUC", "CCC", 'P', PLANKS, 'C', COBBLE, 'U', Upgrade.BLANK.getItemStack()));
     }

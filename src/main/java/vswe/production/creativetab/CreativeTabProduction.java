@@ -3,7 +3,7 @@ package vswe.production.creativetab;
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
-
+import vswe.production.StevesProduction;
 
 
 public class CreativeTabProduction extends CreativeTabs {
@@ -23,13 +23,13 @@ public class CreativeTabProduction extends CreativeTabs {
         item = Item.getItemFromBlock(block);
     }
 
-    private static CreativeTabs tab;
-    public static CreativeTabs getTab() {
+    private static CreativeTabProduction tab;
+    public static CreativeTabProduction getTab() {
         return tab;
     }
 
     @Override
     public String getTranslatedTabLabel() {
-        return "Steve's Production Table";
+        return StevesProduction.NAME;
     }
 }
