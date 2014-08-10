@@ -108,4 +108,8 @@ public class SlotBase extends Slot {
     public int getSlotStackLimit(ItemStack item) {
         return super.getSlotStackLimit();
     }
+
+    public boolean canPickUpOnDoubleClick() {
+        return true;
+    }
 }

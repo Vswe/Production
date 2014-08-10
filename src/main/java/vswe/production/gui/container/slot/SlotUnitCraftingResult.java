@@ -43,4 +43,18 @@ public class SlotUnitCraftingResult extends SlotUnit {
         }
         return super.getY() + offset;
     }
+
+    @Override
+    public boolean canPickUpOnDoubleClick() {
+        return false;
+    }
+
+    @Override
+    public ItemStack decrStackSize(int count) {
+        ItemStack itemstack = getStack();
+        if (itemstack != null) {
+            putStack(null);
+        }
+        return itemstack;
+    }
 }

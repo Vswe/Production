@@ -7,6 +7,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
 import vswe.production.gui.container.slot.SlotUnit;
 import vswe.production.gui.container.slot.SlotUnitCraftingGrid;
 import vswe.production.gui.container.slot.SlotUnitCraftingOutput;
@@ -88,7 +90,7 @@ public class UnitCrafting extends Unit {
             ItemStack itemStack = crafting.getStackInSlot(i);
             if (itemStack != null && itemStack.getItem() != null) {
                 int id = i;
-                for (int j = GRID_SIZE; j < crafting.getSizeInventory(); j++) {
+                for (int j = GRID_SIZE; j < crafting.getFullSize(); j++) {
                     ItemStack other = crafting.getStackInSlot(j);
                     //TODO support ore dictionary and fuzzy etc?. Problem is that it needs to figure out if hte recipe supports it
                     if (other != null && itemStack.isItemEqual(other) && ItemStack.areItemStackTagsEqual(itemStack, other)) {
@@ -98,19 +100,19 @@ public class UnitCrafting extends Unit {
                     }
                 }
 
+                crafting.decrStackSize(id, 1);
                 if (itemStack.getItem().hasContainerItem(itemStack)) {
-                    //TODO where should the container go?
-                    if (false && itemStack.getItem().doesContainerItemLeaveCraftingGrid(itemStack)) {
-                        crafting.decrStackSize(id, 1);
-                        ItemStack containerItem = itemStack.getItem().getContainerItem(itemStack);
-                        if (!fake) {
-                            table.spitOutItem(containerItem);
+                    ItemStack containerItem = itemStack.getItem().getContainerItem(itemStack);
+                    if (!containerItem.isItemStackDamageable() || containerItem.getItemDamage() <= containerItem.getMaxDamage()) {
+                        //TODO where should the container go?
+                        if (false && itemStack.getItem().doesContainerItemLeaveCraftingGrid(itemStack)) {
+                            if (!fake) {
+                                table.spitOutItem(containerItem);
+                            }
+                        }else{
+                            crafting.setInventorySlotContents(id, containerItem);
                         }
-                    }else{
-                        crafting.setInventorySlotContents(id, itemStack.getItem().getContainerItem(itemStack));
                     }
-                }else{
-                    crafting.decrStackSize(id, 1);
                 }
             }
         }
@@ -192,7 +194,7 @@ public class UnitCrafting extends Unit {
         private ItemStack[] items;
 
         private CraftingDummy(CraftingBase base) {
-            items = new ItemStack[base.getSizeInventory()];
+            items = new ItemStack[base.getFullSize()];
             for (int i = 0; i < items.length; i++) {
                 ItemStack itemStack = base.getStackInSlot(i);
                 if (itemStack != null) {
@@ -202,7 +204,7 @@ public class UnitCrafting extends Unit {
         }
 
         @Override
-        public int getSizeInventory() {
+        public int getFullSize() {
             return items.length;
         }
 
@@ -227,7 +229,11 @@ public class UnitCrafting extends Unit {
         }
 
         @Override
-        public int getSizeInventory() {
+        public final int getSizeInventory() {
+            return INVENTORY_WIDTH * INVENTORY_HEIGHT;
+        }
+
+        protected int getFullSize() {
             return INVENTORY_WIDTH * INVENTORY_HEIGHT + (table.getUpgradePage().hasUpgrade(id, Upgrade.STORAGE) ? STORAGE_COUNT : 0);
         }
 
@@ -302,9 +308,9 @@ public class UnitCrafting extends Unit {
 
             CraftingBase crafting = (CraftingBase)obj;
 
-            if (getSizeInventory() != crafting.getSizeInventory()) return false;
+            if (getFullSize() != crafting.getFullSize()) return false;
 
-            for (int i = 0; i < getSizeInventory(); i++) {
+            for (int i = 0; i < getFullSize(); i++) {
                 if (!ItemStack.areItemStacksEqual(getStackInSlot(i), crafting.getStackInSlot(i))) {
                     return false;
                 }

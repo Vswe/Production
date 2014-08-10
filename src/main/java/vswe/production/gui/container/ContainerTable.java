@@ -170,6 +170,10 @@ public class ContainerTable extends Container {
         return result;
     }
 
+    public boolean func_94530_a(ItemStack item, Slot slot) {
+        return ((SlotBase)slot).canPickUpOnDoubleClick();
+    }
+
     public TileEntityTable getTable() {
         return table;
     }

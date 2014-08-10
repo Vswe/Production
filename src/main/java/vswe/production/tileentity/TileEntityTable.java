@@ -264,6 +264,7 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
                 if (dataType == DataType.SIDE_ENABLED) {
                     onSideChange();
                 }
+                markDirty();
                 break;
             case CLOSE:
                 removePlayer(player);
@@ -348,6 +349,9 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
                 IInventory inventory = (IInventory)te;
 
                 List<SlotBase> transferSlots = setting.getSlots();
+                if (transferSlots == null) {
+                    return;
+                }
                 int[] slots1 = new int[transferSlots.size()];
                 for (int i = 0; i < transferSlots.size(); i++) {
                     slots1[i] = transferSlots.get(i).getSlotIndex();

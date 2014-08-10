@@ -49,4 +49,5 @@ public class SlotUnitCraftingGrid extends SlotUnit {
         super.onSlotChanged();
         ((UnitCrafting)unit).onGridChanged();
     }
+
 }
