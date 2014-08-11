@@ -3,7 +3,6 @@ package vswe.production.gui.container;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ICrafting;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
@@ -11,7 +10,7 @@ import vswe.production.gui.container.slot.SlotBase;
 import vswe.production.gui.container.slot.SlotPlayer;
 import vswe.production.tileentity.TileEntityTable;
 
-public class ContainerTable extends Container {
+public class ContainerTable extends ContainerBase {
     private TileEntityTable table;
 
     public ContainerTable(TileEntityTable table, EntityPlayer player) {
@@ -170,7 +169,8 @@ public class ContainerTable extends Container {
         return result;
     }
 
-    public boolean func_94530_a(ItemStack item, Slot slot) {
+    @Override
+    public boolean canItemBePickedUpByDoubleClick(ItemStack item, Slot slot) {
         return ((SlotBase)slot).canPickUpOnDoubleClick();
     }
 
