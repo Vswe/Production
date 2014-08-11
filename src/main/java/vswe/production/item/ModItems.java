@@ -35,22 +35,26 @@ public final class ModItems {
         LanguageRegistry.addName(Upgrade.getInvalidItemStack(), UNKNOWN_UPGRADE);
 
 
-        GameRegistry.addRecipe(new ShapedOreRecipe(Upgrade.BLANK.getItemStack(), "SP", "PS", 'S', STONE, 'P', PLANKS));
-        GameRegistry.addRecipe(new ShapedOreRecipe(Upgrade.STORAGE.getItemStack(), "C", "U", 'C', Blocks.chest, 'U', Upgrade.BLANK.getItemStack()));
-        GameRegistry.addRecipe(new ShapedOreRecipe(Upgrade.AUTO_CRAFTER.getItemStack(), "PPP", "CTC", "CUC", 'P', PLANKS, 'C', COBBLE, 'T', Blocks.piston, 'U', Upgrade.BLANK.getItemStack()));
-        GameRegistry.addRecipe(new ShapedOreRecipe(Upgrade.CHARGED.getItemStack(), "IRI", "IUI", "IRI", 'I', IRON, 'R', REDSTONE, 'U', Upgrade.BLANK.getItemStack()));
-        GameRegistry.addRecipe(new ShapedOreRecipe(Upgrade.SPEED.getItemStack(), "IRI", "LUL", "IRI", 'I', IRON, 'R', REDSTONE, 'L', LAPIS, 'U', Upgrade.BLANK.getItemStack()));
-        GameRegistry.addRecipe(new ShapedOreRecipe(Upgrade.QUEUE.getItemStack(), "PPP", "IUI", "PPP", 'I', IRON, 'P', PLANKS, 'U', Upgrade.BLANK.getItemStack()));
-        GameRegistry.addRecipe(new ShapedOreRecipe(Upgrade.LAVA.getItemStack(), "NFN", "NUN", "NNN", 'N', Blocks.netherrack, 'F', Blocks.furnace, 'U', Upgrade.BLANK.getItemStack()));
-        GameRegistry.addRecipe(new ShapedOreRecipe(Upgrade.SOLAR.getItemStack(), "ICI", "IGI", "IUI", 'I', IRON, 'G', GLOW_STONE, 'C', GLASS, 'U', Upgrade.BLANK.getItemStack()));
-        GameRegistry.addRecipe(new ShapedOreRecipe(Upgrade.EFFICIENCY.getItemStack(), "III", "FPF", "RUR", 'I', IRON, 'R', REDSTONE, 'F', Blocks.furnace, 'P', Blocks.piston, 'U', Upgrade.BLANK.getItemStack()));
-        GameRegistry.addRecipe(new ShapedOreRecipe(Upgrade.AUTO_TRANSFER.getItemStack(), "GGG", "HUH", "GGG", 'G', GOLD, 'H', Blocks.hopper, 'U', Upgrade.BLANK.getItemStack()));
-        GameRegistry.addRecipe(new ShapedOreRecipe(Upgrade.FILTER.getItemStack(), "III", "GBG", "IUI", 'G', Blocks.light_weighted_pressure_plate, 'I', IRON, 'B', Blocks.iron_bars, 'U', Upgrade.BLANK.getItemStack()));
-        GameRegistry.addRecipe(new ShapedOreRecipe(Upgrade.TRANSFER.getItemStack(), "III", "GRG", "GUG", 'G', GOLD, 'I', IRON, 'R', REDSTONE_BLOCK, 'U', Upgrade.BLANK.getItemStack()));
+        addRecipe(Upgrade.BLANK, "SP", "PS", 'S', STONE, 'P', PLANKS);
+        addRecipe(Upgrade.STORAGE, "C", "U", 'C', Blocks.chest, 'U', Upgrade.BLANK.getItemStack());
+        addRecipe(Upgrade.AUTO_CRAFTER, "PPP", "CTC", "CUC", 'P', PLANKS, 'C', COBBLE, 'T', Blocks.piston, 'U', Upgrade.BLANK.getItemStack());
+        addRecipe(Upgrade.CHARGED, "IRI", "IUI", "IRI", 'I', IRON, 'R', REDSTONE, 'U', Upgrade.BLANK.getItemStack());
+        addRecipe(Upgrade.SPEED, "IRI", "LUL", "IRI", 'I', IRON, 'R', REDSTONE, 'L', LAPIS, 'U', Upgrade.BLANK.getItemStack());
+        addRecipe(Upgrade.QUEUE, "PPP", "IUI", "PPP", 'I', IRON, 'P', PLANKS, 'U', Upgrade.BLANK.getItemStack());
+        addRecipe(Upgrade.LAVA, "NFN", "NUN", "NNN", 'N', Blocks.netherrack, 'F', Blocks.furnace, 'U', Upgrade.BLANK.getItemStack());
+        addRecipe(Upgrade.SOLAR, "ICI", "IGI", "IUI", 'I', IRON, 'G', GLOW_STONE, 'C', GLASS, 'U', Upgrade.BLANK.getItemStack());
+        addRecipe(Upgrade.EFFICIENCY, "III", "FPF", "RUR", 'I', IRON, 'R', REDSTONE, 'F', Blocks.furnace, 'P', Blocks.piston, 'U', Upgrade.BLANK.getItemStack());
+        addRecipe(Upgrade.AUTO_TRANSFER, "GGG", "HUH", "GGG", 'G', GOLD, 'H', Blocks.hopper, 'U', Upgrade.BLANK.getItemStack());
+        addRecipe(Upgrade.FILTER, "III", "GBG", "IUI", 'G', Blocks.light_weighted_pressure_plate, 'I', IRON, 'B', Blocks.iron_bars, 'U', Upgrade.BLANK.getItemStack());
+        addRecipe(Upgrade.TRANSFER, "III", "GRG", "GUG", 'G', GOLD, 'I', IRON, 'R', REDSTONE_BLOCK, 'U', Upgrade.BLANK.getItemStack());
 
     }
 
-
+    private static void addRecipe(Upgrade upgrade, Object ... recipe) {
+        if (upgrade.isEnabled()) {
+            GameRegistry.addRecipe(new ShapedOreRecipe(upgrade.getItemStack(), recipe));
+        }
+    }
 
     private ModItems() {}
 }

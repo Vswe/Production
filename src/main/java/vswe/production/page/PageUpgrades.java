@@ -99,7 +99,7 @@ public class PageUpgrades extends Page {
     }
 
     public boolean hasUpgrade(int id, Upgrade upgrade) {
-        return getUpgradeCountRaw(id, upgrade) > 0;
+        return getUpgradeCount(id, upgrade) > 0;
     }
 
     public int getGlobalUpgradeCount(Upgrade upgrade) {

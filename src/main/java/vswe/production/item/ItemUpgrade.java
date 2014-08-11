@@ -60,8 +60,10 @@ public class ItemUpgrade extends Item {
     @Override
     public void getSubItems(Item item, CreativeTabs tab, List lst) {
         for (Upgrade upgrade : Upgrade.values()) {
-            //noinspection unchecked
-            lst.add(upgrade.getItemStack());
+            if (upgrade.isEnabled()) {
+                //noinspection unchecked
+                lst.add(upgrade.getItemStack());
+            }
         }
     }
 

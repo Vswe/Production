@@ -7,7 +7,9 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.FMLEventChannel;
 import cpw.mods.fml.common.network.NetworkRegistry;
+import net.minecraftforge.common.config.Configuration;
 import vswe.production.block.ModBlocks;
+import vswe.production.config.ConfigLoader;
 import vswe.production.creativetab.CreativeTabProduction;
 import vswe.production.gui.GuiHandler;
 import vswe.production.item.ModItems;
@@ -28,6 +30,7 @@ public class StevesProduction {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+        ConfigLoader.init(event.getSuggestedConfigurationFile());
         packetHandler = NetworkRegistry.INSTANCE.newEventDrivenChannel(CHANNEL);
         new CreativeTabProduction();
         ModItems.init();
@@ -44,4 +47,6 @@ public class StevesProduction {
     public void postInit(FMLPostInitializationEvent event) {
 
     }
+
+
 }

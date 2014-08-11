@@ -30,14 +30,8 @@ public class SlotUnit extends SlotTable {
         return false;
     }
 
-
     @Override
-    public int getSlotStackLimit(ItemStack item) {
-        return 0;
-    }
-
-    @Override
-    public int getSlotStackLimit() {
-        return super.getSlotStackLimit(null);
+    public boolean canShiftClickInto() {
+        return false;
     }
 }

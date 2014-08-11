@@ -62,7 +62,8 @@ public abstract class Unit {
         }else{
             GL11.glColor4f(1, 1, 1, 1);
         }
-        gui.drawRect(this.x + x, this.y + y + PROGRESS_OFFSET, ARROW_SRC_X, ARROW_SRC_Y + ARROW_HEIGHT, productionProgress * ARROW_WIDTH / PRODUCTION_TIME, ARROW_HEIGHT);
+        int progress = Math.min(productionProgress, PRODUCTION_TIME);
+        gui.drawRect(this.x + x, this.y + y + PROGRESS_OFFSET, ARROW_SRC_X, ARROW_SRC_Y + ARROW_HEIGHT, progress * ARROW_WIDTH / PRODUCTION_TIME, ARROW_HEIGHT);
         GL11.glDisable(GL11.GL_BLEND);
 
         if (charging && gui.inBounds(this.x + x, this.y + y, ARROW_WIDTH, ARROW_HEIGHT, mX, mY)) {
@@ -151,7 +152,7 @@ public abstract class Unit {
                     done = true;
                     ItemStack output = table.getStackInSlot(getOutputId());
                     if (canMove(result, output)) {
-                        if (chargeCount > 0) {
+                        if (chargeCount > 0 && getMaxCharges() > 0) {
                             chargeCount--;
                             done = false;
                             updatedCharge = true;
@@ -163,9 +164,14 @@ public abstract class Unit {
                             if (table.getPower() >= powerConsumption) {
                                 table.setPower(table.getPower() - powerConsumption);
                                 productionProgress += getProductionSpeed(false);
-                                if (productionProgress >= PRODUCTION_TIME) {
+                                while (productionProgress >= PRODUCTION_TIME) {
                                     productionProgress -= PRODUCTION_TIME;
                                     produce(result, output);
+                                    result = getProductionResult();
+                                    output = table.getStackInSlot(getOutputId());
+                                    if (!canMove(result, output)) {
+                                        break;
+                                    }
                                 }
                                 updatedProgress = true;
                             }
@@ -184,18 +190,22 @@ public abstract class Unit {
             }
 
             if (canCharge && canCharge()) {
-                int powerConsumption = getPowerConsumption(true);
-                if (table.getPower() >= powerConsumption) {
-                    table.setPower(table.getPower() - powerConsumption);
-                    productionProgress += getProductionSpeed(true);
-                    if (productionProgress >= PRODUCTION_TIME) {
-                        productionProgress -= PRODUCTION_TIME;
+                boolean done = false;
+                while (canCharge() && !done) {
+                    done = true;
+                    int powerConsumption = getPowerConsumption(true);
+                    if (table.getPower() >= powerConsumption) {
+                        table.setPower(table.getPower() - powerConsumption);
+                        productionProgress += getProductionSpeed(true);
+                        if (productionProgress >= PRODUCTION_TIME) {
+                            productionProgress -= PRODUCTION_TIME;
 
-                        chargeCount++;
-                        table.sendDataToAllPlayer(DataType.CHARGED, DataUnit.getId(this));
-
+                            chargeCount++;
+                            table.sendDataToAllPlayer(DataType.CHARGED, DataUnit.getId(this));
+                            done = false;
+                        }
+                        updatedProgress = true;
                     }
-                    updatedProgress = true;
                 }
             }else if (canReset && productionProgress != 0){
                 productionProgress = 0;

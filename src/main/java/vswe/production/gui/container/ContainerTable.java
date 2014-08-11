@@ -100,7 +100,7 @@ public class ContainerTable extends ContainerBase {
         if (item.isStackable()) {
             while (item.stackSize > 0 && (!invert && id < end || invert && id >= start)) {
                 slot = (SlotBase)this.inventorySlots.get(id);
-                if (slot.isVisible()) {
+                if (slot.isVisible() && slot.canShiftClickInto()) {
                     slotItem = slot.getStack();
 
                     if (slotItem != null && slotItem.stackSize > 0 && slotItem.getItem() == item.getItem() && (!item.getHasSubtypes() || item.getItemDamage() == slotItem.getItemDamage()) && ItemStack.areItemStackTagsEqual(item, slotItem)) {
@@ -140,7 +140,7 @@ public class ContainerTable extends ContainerBase {
                 slot = (SlotBase)this.inventorySlots.get(id);
                 slotItem = slot.getStack();
 
-                if (slot.isVisible()) {
+                if (slot.isVisible() && slot.canShiftClickInto()) {
                     if (slotItem == null && slot.isItemValid(item)) {
                         int stackLimit = slot.getSlotStackLimit(item);
                         if (stackLimit > 0) {
@@ -170,8 +170,18 @@ public class ContainerTable extends ContainerBase {
     }
 
     @Override
+    protected int getSlotStackLimit(Slot slot, ItemStack item) {
+        return ((SlotBase)slot).getSlotStackLimit(item);
+    }
+
+    @Override
     public boolean canItemBePickedUpByDoubleClick(ItemStack item, Slot slot) {
         return ((SlotBase)slot).canPickUpOnDoubleClick();
+    }
+
+    @Override
+    public boolean canDragIntoSlot(Slot slot) {
+        return ((SlotBase)slot).canDragIntoSlot();
     }
 
     public TileEntityTable getTable() {

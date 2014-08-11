@@ -15,18 +15,18 @@ import java.util.EnumSet;
 import java.util.List;
 
 public enum Upgrade {
-    BLANK("Blank Upgrade", "Crafting component", 0, (ParentType)null),
-    AUTO_CRAFTER("Auto Crafter", "Convert a crafting table into an auto crafting table", 1, ParentType.CRAFTING),
-    STORAGE("Extra Storage", "Adds extra storage", 1, ParentType.CRAFTING),
-    CHARGED("Charger", "Let idle components charge up for later", 8),
-    SPEED("Production Speed", "Increase the production speed", 8),
-    QUEUE("Input Queue", "Adds an input queue", 3, ParentType.SMELTING),
-    EFFICIENCY("Fuel Efficiency", "Improves the fuel efficiency of solid fuel types", 4, ParentType.GLOBAL),
-    LAVA("Lava Generator", "Allows lava to be used as fuel", 1, ParentType.GLOBAL),
-    SOLAR("Solar Generator", "Allows the table to be charged by solar power", 1,  ParentType.GLOBAL),
-    AUTO_TRANSFER("Auto Transfer", "Enables auto transfer to and from the table", 1, ParentType.GLOBAL),
-    FILTER("Filter", "Enables transfer filters", 1,  ParentType.GLOBAL),
-    TRANSFER("Transfer Capacity", "Increases the automatic transfer capacity", 6, ParentType.GLOBAL);
+    BLANK("Blank Upgrade", "Crafting component", new MaxCount(0), (ParentType)null),
+    AUTO_CRAFTER("Auto Crafter", "Convert a crafting table into an auto crafting table", new MaxCount(1), ParentType.CRAFTING),
+    STORAGE("Extra Storage", "Adds extra storage", new MaxCount(1), ParentType.CRAFTING),
+    CHARGED("Charger", "Let idle components charge up for later", new ConfigurableMax(8)),
+    SPEED("Production Speed", "Increase the production speed", new ConfigurableMax(8)),
+    QUEUE("Input Queue", "Adds an input queue", new MaxCount(3), ParentType.SMELTING),
+    EFFICIENCY("Fuel Efficiency", "Improves the fuel efficiency of solid fuel types", new ConfigurableMax(4), ParentType.GLOBAL),
+    LAVA("Lava Generator", "Allows lava to be used as fuel", new MaxCount(1), ParentType.GLOBAL),
+    SOLAR("Solar Generator", "Allows the table to be charged by solar power", new ConfigurableMax(1),  ParentType.GLOBAL),
+    AUTO_TRANSFER("Auto Transfer", "Enables auto transfer to and from the table", new MaxCount(1), ParentType.GLOBAL),
+    FILTER("Filter", "Enables transfer filters", new MaxCount(1),  ParentType.GLOBAL),
+    TRANSFER("Transfer Capacity", "Increases the automatic transfer capacity", new ConfigurableMax(6, 20), ParentType.GLOBAL);
 
     //PATTERN("Pattern Crafting", "Remembers old recipes", 4, ParentType.CRAFTING), //TODO
     //RESTOCK("Restock Control", "Only produce more items when there isn't enough of them", 1), //TODO
@@ -34,22 +34,24 @@ public enum Upgrade {
     private String unlocalizedName;
     private String name;
     private String description;
-    private int maxCount;
+    private MaxCount maxCount;
     private EnumSet<ParentType> validParents;
 
-    Upgrade(String name, String description, int maxCount, EnumSet<ParentType> validParents) {
+
+    Upgrade(String name, String description, MaxCount maxCount, EnumSet<ParentType> validParents) {
         this.name = name;
         this.validParents = validParents;
         this.unlocalizedName = toString().toLowerCase();
         this.description = description;
         this.maxCount = maxCount;
+        maxCount.init(this);
     }
 
-    Upgrade(String name, String description, int maxCount, ParentType type) {
+    Upgrade(String name, String description, MaxCount maxCount, ParentType type) {
         this(name, description, maxCount, type == null ? EnumSet.noneOf(ParentType.class) : EnumSet.of(type));
     }
 
-    Upgrade(String name, String description, int maxCount) {
+    Upgrade(String name, String description, MaxCount maxCount) {
         this(name, description, maxCount, EnumSet.of(ParentType.CRAFTING, ParentType.SMELTING));
     }
 
@@ -57,6 +59,10 @@ public enum Upgrade {
         return unlocalizedName;
     }
 
+
+    public boolean isEnabled() {
+        return maxCount.getConfigurableMax() == 0 || maxCount.getMax() > 0;
+    }
 
     public String getName() {
         return name;
@@ -87,10 +93,12 @@ public enum Upgrade {
     public void addInfo(List<String> info) {
         info.add(EnumChatFormatting.GRAY + description);
         if (GuiScreen.isShiftKeyDown()) {
-            if (maxCount == 1) {
+            if (getMaxCount() == 1) {
                 info.add(EnumChatFormatting.YELLOW + "Doesn't stack well");
-            }else if (maxCount > 1) {
-                info.add(EnumChatFormatting.YELLOW + "Stacks well up to " + maxCount + " items");
+            }else if (getMaxCount() > 1) {
+                info.add(EnumChatFormatting.YELLOW + "Stacks well up to " + getMaxCount() + " items");
+            }else if(!isEnabled()) {
+                info.add(EnumChatFormatting.DARK_RED + "This item is disabled");
             }
 
             for (ParentType validParent : validParents) {
@@ -110,6 +118,10 @@ public enum Upgrade {
     }
 
     public int getMaxCount() {
+        return maxCount.getMax();
+    }
+
+    public MaxCount getMaxCountObject() {
         return maxCount;
     }
 
@@ -141,4 +153,54 @@ public enum Upgrade {
 
         protected abstract boolean isValidParent(ItemStack item);
     }
-}
+
+    public static class MaxCount {
+        private int max;
+        private int defaultMax;
+
+        public MaxCount(int max) {
+            this.max = max;
+            this.defaultMax = max;
+        }
+
+        public int getMax() {
+            return max;
+        }
+
+        public void setMax(int value) {
+            this.max = value;
+        }
+
+        public int getConfigurableMax() {
+            return defaultMax;
+        }
+
+        public void init(Upgrade upgrade) {
+
+        }
+    }
+
+    private static class ConfigurableMax extends MaxCount {
+        private boolean isGlobal;
+        private int configurableMax;
+        private ConfigurableMax(int max, int configurableMax) {
+            super(max);
+            this.configurableMax = configurableMax;
+        }
+        private ConfigurableMax(int max) {
+            this(max, -1);
+        }
+
+        private static final int GLOBAL_MAX_COUNT = 8 * 64;
+        private static final int MAX_COUNT = 7 * 64;
+        @Override
+        public int getConfigurableMax() {
+            return configurableMax != -1 ? configurableMax : isGlobal ? GLOBAL_MAX_COUNT : MAX_COUNT;
+        }
+
+        @Override
+        public void init(Upgrade upgrade) {
+            isGlobal = upgrade.validParents.contains(ParentType.GLOBAL);
+        }
+    }
+ }

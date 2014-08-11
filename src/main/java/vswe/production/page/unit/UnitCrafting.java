@@ -90,10 +90,12 @@ public class UnitCrafting extends Unit {
             ItemStack itemStack = crafting.getStackInSlot(i);
             if (itemStack != null && itemStack.getItem() != null) {
                 int id = i;
-                for (int j = GRID_SIZE; j < crafting.getFullSize(); j++) {
+                for (int j = 0; j < crafting.getFullSize(); j++) {
+                    if (i == j) continue;
+
                     ItemStack other = crafting.getStackInSlot(j);
                     //TODO support ore dictionary and fuzzy etc?. Problem is that it needs to figure out if hte recipe supports it
-                    if (other != null && itemStack.isItemEqual(other) && ItemStack.areItemStackTagsEqual(itemStack, other)) {
+                    if (other != null && (j >= GRID_SIZE || other.stackSize > itemStack.stackSize) && itemStack.isItemEqual(other) && ItemStack.areItemStackTagsEqual(itemStack, other)) {
                         id = j;
                         itemStack = other;
                         break;

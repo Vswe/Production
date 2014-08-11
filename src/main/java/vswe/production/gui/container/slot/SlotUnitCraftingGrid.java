@@ -50,4 +50,13 @@ public class SlotUnitCraftingGrid extends SlotUnit {
         ((UnitCrafting)unit).onGridChanged();
     }
 
+    @Override
+    public boolean shouldSlotHighlightItems() {
+        return false;
+    }
+
+    @Override
+    public boolean shouldSlotHighlightSelf() {
+        return false;
+    }
 }

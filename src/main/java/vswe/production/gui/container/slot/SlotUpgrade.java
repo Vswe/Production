@@ -31,9 +31,9 @@ public class SlotUpgrade extends SlotTable {
             Upgrade upgrade = ModItems.upgrade.getUpgrade(item);
             if (upgrade != null) {
                 int count = table.getUpgradePage().getUpgradeCount(upgradeSection, upgrade);
-                return upgrade.getMaxCount() - count + (getStack() != null ? getStack().stackSize : 0);
+                return Math.min(64, upgrade.getMaxCount() - count + (getStack() != null ? getStack().stackSize : 0));
             }else{
-                return 8;
+                return super.getSlotStackLimit(item);
             }
         }
 
@@ -82,5 +82,13 @@ public class SlotUpgrade extends SlotTable {
         table.onUpgradeChangeDistribute();
     }
 
+    @Override
+    public boolean canDragIntoSlot() {
+        return false;
+    }
 
+    @Override
+    public boolean canPickUpOnDoubleClick() {
+        return false;
+    }
 }

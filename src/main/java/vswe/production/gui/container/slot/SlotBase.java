@@ -43,7 +43,7 @@ public class SlotBase extends Slot {
 
     @Override
     public boolean isItemValid(ItemStack itemstack) {
-        return isEnabled();
+        return isEnabled() && getSlotStackLimit(itemstack) > 0;
     }
 
     public boolean isVisible() {
@@ -110,6 +110,22 @@ public class SlotBase extends Slot {
     }
 
     public boolean canPickUpOnDoubleClick() {
+        return isVisible() && isEnabled();
+    }
+
+    public boolean canDragIntoSlot() {
+        return true;
+    }
+
+    public boolean canShiftClickInto() {
+        return true;
+    }
+
+    public boolean shouldSlotHighlightItems() {
+        return true;
+    }
+
+    public boolean shouldSlotHighlightSelf() {
         return true;
     }
 }

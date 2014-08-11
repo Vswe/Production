@@ -469,8 +469,9 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
     private int lastPower;
     private int lastLava;
     private void reloadFuel() {
-        if (getUpgradePage().hasGlobalUpgrade(Upgrade.SOLAR) && isLitAndCanSeeTheSky()) {
-            power += SOLAR_GENERATION;
+
+        if (isLitAndCanSeeTheSky()) {
+            power += SOLAR_GENERATION * getUpgradePage().getGlobalUpgradeCount(Upgrade.SOLAR);
         }
 
         if (getUpgradePage().hasGlobalUpgrade(Upgrade.LAVA)) {
@@ -521,6 +522,8 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
         if (!worldObj.isRemote) {
             onUpgradeChange();
             sendToAllPlayers(PacketHandler.getWriter(this, PacketId.UPGRADE_CHANGE));
+        }else{
+            getUpgradePage().onUpgradeChange();
         }
     }
 

@@ -198,16 +198,18 @@ public abstract class ContainerBase extends Container {
                                 totalSize += 1;
                             }
 
-                            int maxSize = Math.min(playerItem.getMaxStackSize(), slot.getSlotStackLimit());
+                            int maxSize = Math.min(playerItem.getMaxStackSize(), getSlotStackLimit(slot, playerItem));
                             if (totalSize > maxSize) {
                                 totalSize = maxSize;
                             }
 
-                            remainingItems -= totalSize - currentCount;
+                            if (totalSize > 0) {
+                                remainingItems -= totalSize - currentCount;
 
-                            ItemStack newItem = playerItem.copy();
-                            newItem.stackSize = totalSize;
-                            slot.putStack(newItem);
+                                ItemStack newItem = playerItem.copy();
+                                newItem.stackSize = totalSize;
+                                slot.putStack(newItem);
+                            }
                         }
                     }
 
@@ -276,8 +278,9 @@ public abstract class ContainerBase extends Container {
                             if (playerItem != null && slot.isItemValid(playerItem)) {
                                 int moveSize = mouseButton == MOUSE_LEFT_CLICK ? playerItem.stackSize : 1;
 
-                                if (moveSize > slot.getSlotStackLimit()) {
-                                    moveSize = slot.getSlotStackLimit();
+                                int maxSize = getSlotStackLimit(slot, playerItem);
+                                if (moveSize > maxSize) {
+                                    moveSize = maxSize;
                                 }
 
                                 if (moveSize > 0) {
@@ -300,15 +303,17 @@ public abstract class ContainerBase extends Container {
                                 if (slotItem.getItem() == playerItem.getItem() && slotItem.getItemDamage() == playerItem.getItemDamage() && ItemStack.areItemStackTagsEqual(slotItem, playerItem)) {
                                     int moveSize = mouseButton == MOUSE_LEFT_CLICK ? playerItem.stackSize : 1;
 
-                                    int maxMoveSize = Math.min(slot.getSlotStackLimit(), playerItem.getMaxStackSize()) - slotItem.stackSize;
+                                    int maxMoveSize = Math.min(getSlotStackLimit(slot, playerItem), playerItem.getMaxStackSize()) - slotItem.stackSize;
                                     if (moveSize > maxMoveSize) {
                                         moveSize = maxMoveSize;
                                     }
 
-                                    playerItem.splitStack(moveSize);
-                                    slotItem.stackSize += moveSize;
+                                    if (moveSize > 0) {
+                                        playerItem.splitStack(moveSize);
+                                        slotItem.stackSize += moveSize;
+                                    }
 
-                                }else if (playerItem.stackSize <= slot.getSlotStackLimit()) {
+                                }else if (playerItem.stackSize <= getSlotStackLimit(slot, playerItem)) {
                                     slot.putStack(playerItem);
                                     inventoryPlayer.setItemStack(slotItem);
                                 }
@@ -588,6 +593,22 @@ public abstract class ContainerBase extends Container {
         return true;
     }
 
+      /*
+       =============================================
+                Extracted methods
+       =============================================
+
+       The following methods are methods whose functionality
+       is a part of bigger methods in the vanilla Container.
+       These still do the same things but are extracted into
+       their own methods so they can be overridden in sub-
+       classes.
+     */
+
+    protected int getSlotStackLimit(Slot slot, ItemStack itemStack) {
+        return slot.getSlotStackLimit();
+    }
+
 
     /*
        =============================================
@@ -614,7 +635,7 @@ public abstract class ContainerBase extends Container {
         setValidState(player, valid);
     }
     @Override
-    protected void func_94533_d() {
+    protected final void func_94533_d() {
         resetDragging();
     }
 }
