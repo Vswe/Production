@@ -78,19 +78,19 @@ public class UnitCrafting extends Unit {
         return super.canCharge() && table.getUpgradePage().hasUpgrade(id, Upgrade.AUTO_CRAFTER);
     }
 
-    public void onCrafting() {
+    public void onCrafting(boolean auto) {
         lockedRecipeGeneration = true;
-        onCrafting(inventoryCrafting, false);
+        onCrafting(inventoryCrafting, auto, false);
         lockedRecipeGeneration = false;
         onGridChanged();
     }
 
-    private void onCrafting(CraftingBase crafting, boolean fake) {
+    private void onCrafting(CraftingBase crafting, boolean auto, boolean fake) {
         for (int i = 0; i < GRID_SIZE; i++) {
             ItemStack itemStack = crafting.getStackInSlot(i);
             if (itemStack != null && itemStack.getItem() != null) {
                 int id = i;
-                for (int j = 0; j < crafting.getFullSize(); j++) {
+                for (int j = auto ? 0 : GRID_SIZE; j < crafting.getFullSize(); j++) {
                     if (i == j) continue;
 
                     ItemStack other = crafting.getStackInSlot(j);
@@ -143,7 +143,7 @@ public class UnitCrafting extends Unit {
                     canAutoCraft = false;
                 }else{
                     CraftingBase dummy = new CraftingDummy(inventoryCrafting);
-                    onCrafting(dummy, true);
+                    onCrafting(dummy, true, true);
                     canAutoCraft = dummy.isMatch(recipe);
                 }
             }
@@ -357,6 +357,6 @@ public class UnitCrafting extends Unit {
 
     @Override
     protected void onProduction() {
-        onCrafting();
+        onCrafting(true);
     }
 }

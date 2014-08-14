@@ -31,7 +31,7 @@ public class SlotUnit extends SlotTable {
     }
 
     @Override
-    public boolean canShiftClickInto() {
+    public boolean canShiftClickInto(ItemStack item) {
         return false;
     }
 }

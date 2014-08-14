@@ -1,6 +1,7 @@
 package vswe.production.gui.container.slot;
 
 
+import net.minecraft.item.ItemStack;
 import vswe.production.item.Upgrade;
 import vswe.production.page.Page;
 import vswe.production.page.unit.Unit;
@@ -25,5 +26,10 @@ public class SlotUnitFurnaceQueue extends SlotUnitFurnaceInput {
 
     private boolean isUsed() {
         return queueId < table.getUpgradePage().getUpgradeCount(unit.getId(), Upgrade.QUEUE);
+    }
+
+    @Override
+    public boolean canShiftClickInto(ItemStack item) {
+        return true;
     }
 }

@@ -299,7 +299,7 @@ public abstract class ContainerBase extends Container {
 
                                 slot.onPickupFromSlot(player, playerItem);
 
-                            }else if (slot.isItemValid(playerItem)) {
+                            }else if (slot.isItemValid(playerItem) && getSlotStackLimit(slot, playerItem) > slotItem.stackSize) {
                                 if (slotItem.getItem() == playerItem.getItem() && slotItem.getItemDamage() == playerItem.getItemDamage() && ItemStack.areItemStackTagsEqual(slotItem, playerItem)) {
                                     int moveSize = mouseButton == MOUSE_LEFT_CLICK ? playerItem.stackSize : 1;
 

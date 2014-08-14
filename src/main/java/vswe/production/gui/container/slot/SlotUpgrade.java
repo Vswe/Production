@@ -84,7 +84,7 @@ public class SlotUpgrade extends SlotTable {
 
     @Override
     public boolean canDragIntoSlot() {
-        return false;
+        return isMain;
     }
 
     @Override

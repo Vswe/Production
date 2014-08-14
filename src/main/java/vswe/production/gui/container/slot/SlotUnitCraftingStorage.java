@@ -32,6 +32,16 @@ public class SlotUnitCraftingStorage extends SlotUnit {
     }
 
     @Override
+    public boolean shouldSlotHighlightItems() {
+        return false;
+    }
+
+    @Override
+    public boolean shouldSlotHighlightSelf() {
+        return false;
+    }
+
+    @Override
     public void onSlotChanged() {
         super.onSlotChanged();
         ((UnitCrafting)unit).onGridChanged();

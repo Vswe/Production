@@ -1,5 +1,8 @@
 package vswe.production.gui.container.slot;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.client.Minecraft;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
@@ -43,7 +46,7 @@ public class SlotBase extends Slot {
 
     @Override
     public boolean isItemValid(ItemStack itemstack) {
-        return isEnabled() && getSlotStackLimit(itemstack) > 0;
+        return isEnabled();
     }
 
     public boolean isVisible() {
@@ -117,7 +120,7 @@ public class SlotBase extends Slot {
         return true;
     }
 
-    public boolean canShiftClickInto() {
+    public boolean canShiftClickInto(ItemStack item) {
         return true;
     }
 
@@ -127,5 +130,10 @@ public class SlotBase extends Slot {
 
     public boolean shouldSlotHighlightSelf() {
         return true;
+    }
+
+    @SideOnly(Side.CLIENT)
+    protected static boolean shouldHighlight(SlotBase slot, SlotBase other) {
+        return Minecraft.getMinecraft().thePlayer.inventory.getItemStack() == null && slot != null && !slot.getHasStack() && other != null && other.getHasStack() && slot.isItemValid(other.getStack()) && slot.getSlotStackLimit(other.getStack()) > (slot.getHasStack() ? slot.getStack().stackSize : 0);
     }
 }

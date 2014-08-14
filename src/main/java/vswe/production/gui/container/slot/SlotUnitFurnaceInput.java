@@ -16,4 +16,9 @@ public class SlotUnitFurnaceInput extends SlotUnit {
     public boolean isItemValid(ItemStack itemstack) {
         return super.isItemValid(itemstack) && FurnaceRecipes.smelting().getSmeltingResult(itemstack) != null;
     }
+
+    @Override
+    public boolean canShiftClickInto(ItemStack item) {
+        return true;
+    }
 }

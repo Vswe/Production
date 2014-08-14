@@ -21,11 +21,7 @@ public class SlotFuel extends SlotTable {
     }
 
     @Override
-    public int getSlotStackLimit(ItemStack item) {
-        if (item != null && item.getItem().equals(Item.getItemFromBlock(Blocks.crafting_table))) {
-            return 0;
-        }else{
-            return super.getSlotStackLimit(item);
-        }
+    public boolean canShiftClickInto(ItemStack item) {
+        return !item.getItem().equals(Item.getItemFromBlock(Blocks.crafting_table));
     }
 }

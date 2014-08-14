@@ -12,7 +12,7 @@ public class SlotPlayer extends SlotBase {
 
     @Override
     public int getTextureIndex(GuiBase gui) {
-        return gui.mc.thePlayer.inventory.getItemStack() == null && getHasStack() && gui.getSelectedSlot() != null && gui.getSelectedSlot().shouldSlotHighlightItems() && !gui.getSelectedSlot().getHasStack() && gui.getSelectedSlot().getSlotStackLimit(getStack()) > 0 && gui.getSelectedSlot().isItemValid(getStack()) ? 3 : super.getTextureIndex(gui);
+        return shouldHighlight(gui.getSelectedSlot(), this) && gui.getSelectedSlot().shouldSlotHighlightItems() ? 3 : super.getTextureIndex(gui);
     }
 
     @Override

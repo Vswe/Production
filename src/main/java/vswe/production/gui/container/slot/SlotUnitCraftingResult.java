@@ -26,7 +26,7 @@ public class SlotUnitCraftingResult extends SlotUnit {
     @Override
     public void onPickupFromSlot(EntityPlayer player, ItemStack item) {
         super.onPickupFromSlot(player, item);
-        ((UnitCrafting)unit).onCrafting();
+        ((UnitCrafting)unit).onCrafting(false);
     }
 
     @Override
