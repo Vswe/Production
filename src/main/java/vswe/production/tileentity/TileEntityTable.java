@@ -18,7 +18,6 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
 import net.minecraftforge.fluids.IFluidHandler;
 import vswe.production.block.BlockTable;
-import vswe.production.block.ModBlocks;
 import vswe.production.gui.container.slot.SlotBase;
 import vswe.production.gui.container.slot.SlotFuel;
 import vswe.production.gui.menu.GuiMenu;
@@ -367,8 +366,6 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
                 for (int i = 0; i < transferSlots.size(); i++) {
                     slots1[i] = transferSlots.get(i).getSlotIndex();
                 }
-
-
 
                 int[] slots2;
                 ForgeDirection directionReversed = direction.getOpposite();

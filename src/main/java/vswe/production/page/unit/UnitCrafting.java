@@ -7,6 +7,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
 import vswe.production.gui.container.slot.SlotUnit;
@@ -292,6 +293,10 @@ public class UnitCrafting extends Unit {
         }
 
         public IRecipe getRecipe() {
+            if (isMatch(REPAIR_RECIPE)) {
+                return REPAIR_RECIPE;
+            }
+
             for (int i = 0; i < CraftingManager.getInstance().getRecipeList().size(); i++) {
                 IRecipe recipe = (IRecipe) CraftingManager.getInstance().getRecipeList().get(i);
 
@@ -322,6 +327,58 @@ public class UnitCrafting extends Unit {
         }
     }
 
+    private static final IRecipe REPAIR_RECIPE = new RepairRecipe();
+    private static class RepairRecipe implements IRecipe {
+
+        @Override
+        public boolean matches(InventoryCrafting crafting, World world) {
+            return getCraftingResult(crafting) != null;
+        }
+
+        @Override
+        public ItemStack getCraftingResult(InventoryCrafting crafting) {
+            Item repairItem = null;
+            int count = 0;
+            int units = 0;
+            for (int i = 0; i < crafting.getSizeInventory(); i++) {
+                ItemStack item = crafting.getStackInSlot(i);
+                if (item != null) {
+                    if (repairItem == null) {
+                        repairItem = item.getItem();
+                        if (!repairItem.isRepairable()) {
+                            return null;
+                        }
+                        units = repairItem.getMaxDamage() * 5 / 100;
+                    }else if (repairItem != item.getItem() || item.stackSize != 1 || count == 2) {
+                        return null;
+                    }
+
+                    units += item.getMaxDamage() - item.getItemDamageForDisplay();
+                    count++;
+                }
+            }
+
+            if (repairItem != null && count == 2) {
+                int damage =  repairItem.getMaxDamage() - units;
+                if (damage < 0) {
+                    damage = 0;
+                }
+                return new ItemStack(repairItem, 1, damage);
+            }else{
+                return null;
+            }
+        }
+
+        @Override
+        public int getRecipeSize() {
+            return 9;
+        }
+
+        @Override
+        public ItemStack getRecipeOutput() {
+            return null;
+        }
+    }
 
 
     @Override
