@@ -2,12 +2,14 @@ package vswe.production.tileentity;
 
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.tileentity.TileEntityFurnace;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.Fluid;
@@ -16,6 +18,7 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTankInfo;
 import net.minecraftforge.fluids.IFluidHandler;
 import vswe.production.block.BlockTable;
+import vswe.production.block.ModBlocks;
 import vswe.production.gui.container.slot.SlotBase;
 import vswe.production.gui.container.slot.SlotFuel;
 import vswe.production.gui.menu.GuiMenu;
@@ -346,7 +349,15 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
 
             TileEntity te = worldObj.getTileEntity(xCoord + direction.offsetX, yCoord + direction.offsetY, zCoord + direction.offsetZ);
             if (te instanceof IInventory) {
-                IInventory inventory = (IInventory)te;
+                IInventory inventory;
+                if (te instanceof TileEntityChest) {
+                    inventory = Blocks.chest.func_149951_m(te.getWorldObj(), te.xCoord, te.yCoord, te.zCoord);
+                    if (inventory == null) {
+                        return;
+                    }
+                }else{
+                    inventory = (IInventory)te;
+                }
 
                 List<SlotBase> transferSlots = setting.getSlots();
                 if (transferSlots == null) {
@@ -357,8 +368,9 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
                     slots1[i] = transferSlots.get(i).getSlotIndex();
                 }
 
-                int[] slots2;
 
+
+                int[] slots2;
                 ForgeDirection directionReversed = direction.getOpposite();
                 if (inventory instanceof ISidedInventory) {
                     slots2 = ((ISidedInventory)inventory).getAccessibleSlotsFromSide(directionReversed.ordinal());
