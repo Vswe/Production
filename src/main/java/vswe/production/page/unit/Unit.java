@@ -213,8 +213,13 @@ public abstract class Unit {
             }
 
             if (updatedProgress) {
+                workingTicks = WORKING_COOLDOWN;
                 table.sendDataToAllPlayer(DataType.PROGRESS, DataUnit.getId(this));
+            }else if(workingTicks > 0) {
+                workingTicks--;
             }
+        }else if(workingTicks > 0) {
+            workingTicks--;
         }
     }
 
@@ -252,6 +257,7 @@ public abstract class Unit {
 
     public void setProductionProgress(int productionProgress) {
         this.productionProgress = productionProgress;
+        workingTicks = WORKING_COOLDOWN;
     }
 
 
@@ -275,5 +281,11 @@ public abstract class Unit {
     public void readFromNBT(NBTTagCompound compound) {
         chargeCount = compound.getByte(NBT_CHARGED);
         productionProgress = compound.getShort(NBT_PROGRESS);
+    }
+
+    private static final int WORKING_COOLDOWN = 20;
+    private int workingTicks;
+    public boolean isWorking() {
+        return workingTicks > 0;
     }
 }

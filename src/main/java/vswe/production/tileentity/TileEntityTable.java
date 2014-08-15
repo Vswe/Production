@@ -271,6 +271,9 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
             case CLOSE:
                 removePlayer(player);
                 break;
+            case RE_OPEN:
+                addPlayer(player);
+                break;
         }
     }
 

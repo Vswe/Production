@@ -64,8 +64,8 @@ public class PageMain extends Page {
         return id;
     }
 
-    private static final int WIDTH = 256;
-    private static final int HEIGHT = 174;
+    public static final int WIDTH = 256;
+    public static final int HEIGHT = 174;
     private static final int TEXTURE_SHEET_SIZE = 256;
     private static final int BAR_THICKNESS = 4;
     private static final int BAR_WIDTH = 240;

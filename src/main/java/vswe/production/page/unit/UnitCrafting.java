@@ -30,7 +30,7 @@ public class UnitCrafting extends Unit {
     private static final int SLOT_SIZE = 18;
     private static final int GRID_WIDTH = 3;
     private static final int GRID_HEIGHT = 3;
-    private static final int GRID_SIZE = GRID_WIDTH * GRID_HEIGHT;
+    public static final int GRID_SIZE = GRID_WIDTH * GRID_HEIGHT;
     private static final int RESULT_OFFSET_X = 94;
     private static final int RESULT_OFFSET_Y = 18;
     public static final int RESULT_AUTO_OFFSET = -5;
@@ -180,6 +180,7 @@ public class UnitCrafting extends Unit {
             onGridChanged();
         }
     }
+
 
     private class CraftingWrapper extends CraftingBase {
         @Override

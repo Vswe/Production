@@ -1,9 +1,11 @@
 package vswe.production.gui;
 
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumChatFormatting;
 import org.lwjgl.opengl.GL11;
+import vswe.production.StevesProduction;
 import vswe.production.gui.container.ContainerTable;
 import vswe.production.gui.container.slot.SlotBase;
 import vswe.production.item.Upgrade;
@@ -213,10 +215,26 @@ public class GuiTable extends GuiBase {
         return String.format("%,d", number).replace((char)160,(char)32);
     }
 
+    private boolean closed;
     @Override
     public void onGuiClosed() {
         super.onGuiClosed();
 
         PacketHandler.sendToServer(PacketHandler.getWriter(table, PacketId.CLOSE));
+        closed = true;
+    }
+
+    @Override
+    public void setWorldAndResolution(Minecraft minecraft, int width, int height) {
+        super.setWorldAndResolution(minecraft, width, height);
+
+        if (closed) {
+            PacketHandler.sendToServer(PacketHandler.getWriter(table, PacketId.RE_OPEN));
+            closed = false;
+        }
+    }
+
+    public TileEntityTable getTable() {
+        return table;
     }
 }
