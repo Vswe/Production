@@ -20,7 +20,7 @@ import vswe.production.network.PacketHandler;
 public class StevesProduction {
     public static final String CHANNEL = "SWorkshop";
     public static final String NAME = "Steve's Workshop";
-    public static final String VERSION = "0.4.b";
+    public static final String VERSION = "0.4.0";
 
     public static INEICallback nei;
 
