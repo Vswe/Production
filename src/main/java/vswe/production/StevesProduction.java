@@ -11,6 +11,7 @@ import vswe.production.config.ConfigLoader;
 import vswe.production.creativetab.CreativeTabProduction;
 import vswe.production.gui.GuiHandler;
 import vswe.production.item.ModItems;
+import vswe.production.nei.INEICallback;
 import vswe.production.network.PacketHandler;
 
 
@@ -19,7 +20,9 @@ import vswe.production.network.PacketHandler;
 public class StevesProduction {
     public static final String CHANNEL = "SWorkshop";
     public static final String NAME = "Steve's Workshop";
-    public static final String VERSION = "0.3.0";
+    public static final String VERSION = "0.4.b";
+
+    public static INEICallback nei;
 
     public static FMLEventChannel packetHandler;
 

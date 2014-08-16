@@ -13,6 +13,7 @@ public class NEIProductionConfig implements IConfigureNEI {
         OverlayWrapper overlay = new OverlayWrapper();
         API.registerGuiOverlay(GuiTable.class, "crafting", overlay);
         API.registerGuiOverlayHandler(GuiTable.class, overlay, "crafting");
+        StevesProduction.nei = new NEICallback();
     }
 
     @Override
@@ -24,8 +25,4 @@ public class NEIProductionConfig implements IConfigureNEI {
     public String getVersion() {
         return StevesProduction.VERSION;
     }
-
-    //TODO arrows with clickable recipes?
-    //TODO furnaces?
-
 }

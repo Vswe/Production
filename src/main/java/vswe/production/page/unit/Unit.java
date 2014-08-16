@@ -7,6 +7,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import org.lwjgl.opengl.GL11;
+import vswe.production.StevesProduction;
 import vswe.production.gui.GuiBase;
 import vswe.production.gui.container.slot.SlotBase;
 import vswe.production.item.Upgrade;
@@ -66,13 +67,29 @@ public abstract class Unit {
         gui.drawRect(this.x + x, this.y + y + PROGRESS_OFFSET, ARROW_SRC_X, ARROW_SRC_Y + ARROW_HEIGHT, progress * ARROW_WIDTH / PRODUCTION_TIME, ARROW_HEIGHT);
         GL11.glDisable(GL11.GL_BLEND);
 
-        if (charging && gui.inBounds(this.x + x, this.y + y, ARROW_WIDTH, ARROW_HEIGHT, mX, mY)) {
-            List<String> str = new ArrayList<String>();
-            str.add(EnumChatFormatting.GREEN + (chargeCount < max ? "Charging" : "Fully Charged"));
-            str.add("Charges: " + chargeCount + "/" + max);
-            str.add(EnumChatFormatting.GRAY + "Charges can be consumed to instantly produce an item");
+        if ((StevesProduction.nei != null || charging) && gui.inBounds(this.x + x, this.y + y, ARROW_WIDTH, ARROW_HEIGHT, mX, mY)) {
+            if (!charging) {
+                gui.drawMouseOver("Recipes");
+            }else{
+                List<String> str = new ArrayList<String>();
+                str.add(EnumChatFormatting.GREEN + (chargeCount < max ? "Charging" : "Fully Charged"));
+                str.add("Charges: " + chargeCount + "/" + max);
+                str.add(EnumChatFormatting.GRAY + "Charges can be consumed to instantly produce an item");
 
-            gui.drawMouseOver(str);
+                if (StevesProduction.nei != null) {
+                    str.add("");
+                    str.add("Click for Recipes");
+                }
+
+                gui.drawMouseOver(str);
+            }
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    public void onClick(GuiBase gui, int mX, int mY) {
+        if (StevesProduction.nei != null &&gui.inBounds(this.x + getArrowX(), this.y + getArrowY(), ARROW_WIDTH, ARROW_HEIGHT, mX, mY)) {
+            StevesProduction.nei.onArrowClick(this);
         }
     }
 
@@ -288,4 +305,6 @@ public abstract class Unit {
     public boolean isWorking() {
         return workingTicks > 0;
     }
+
+
 }

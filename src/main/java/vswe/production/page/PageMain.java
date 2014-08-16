@@ -89,6 +89,15 @@ public class PageMain extends Page {
         }
     }
 
+    @Override
+    public void onClick(GuiBase gui, int mX, int mY, int button) {
+        for (Unit unit : units) {
+            if (unit.isEnabled()) {
+                unit.onClick(gui, mX, mY);
+            }
+        }
+    }
+
     public List<Unit> getUnits() {
         return units;
     }
