@@ -40,4 +40,6 @@ public class SlotUnitCraftingOutput extends SlotUnit {
     public boolean isItemValid(ItemStack itemstack) {
         return false;
     }
+
+
 }

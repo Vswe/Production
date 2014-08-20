@@ -146,9 +146,13 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
 
     @Override
     public ItemStack getStackInSlotOnClosing(int id) {
-        ItemStack item = getStackInSlot(id);
-        setInventorySlotContents(id, null);
-        return item;
+        if (slots.get(id).shouldDropOnClosing()) {
+            ItemStack item = getStackInSlot(id);
+            setInventorySlotContents(id, null);
+            return item;
+        }else{
+            return null;
+        }
     }
 
     @Override

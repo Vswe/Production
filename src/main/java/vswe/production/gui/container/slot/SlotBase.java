@@ -136,4 +136,8 @@ public class SlotBase extends Slot {
     protected static boolean shouldHighlight(SlotBase slot, SlotBase other) {
         return Minecraft.getMinecraft().thePlayer.inventory.getItemStack() == null && slot != null && !slot.getHasStack() && other != null && other.getHasStack() && slot.isItemValid(other.getStack()) && slot.getSlotStackLimit(other.getStack()) > (slot.getHasStack() ? slot.getStack().stackSize : 0);
     }
+
+    public boolean shouldDropOnClosing() {
+        return true;
+    }
 }

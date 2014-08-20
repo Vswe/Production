@@ -57,4 +57,9 @@ public class SlotUnitCraftingResult extends SlotUnit {
         }
         return itemstack;
     }
+
+    @Override
+    public boolean shouldDropOnClosing() {
+        return false;
+    }
 }
