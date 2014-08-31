@@ -94,7 +94,7 @@ public class UnitSmelting extends Unit {
     }
 
     @Override
-    protected void onProduction() {
+    protected void onProduction(ItemStack result) {
         table.decrStackSize(inputId, 1);
     }
 

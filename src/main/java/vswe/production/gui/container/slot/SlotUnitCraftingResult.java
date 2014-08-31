@@ -1,5 +1,6 @@
 package vswe.production.gui.container.slot;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import vswe.production.item.Upgrade;
@@ -26,7 +27,7 @@ public class SlotUnitCraftingResult extends SlotUnit {
     @Override
     public void onPickupFromSlot(EntityPlayer player, ItemStack item) {
         super.onPickupFromSlot(player, item);
-        ((UnitCrafting)unit).onCrafting(false);
+        ((UnitCrafting)unit).onCrafting(player, item);
     }
 
     @Override

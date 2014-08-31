@@ -153,7 +153,7 @@ public abstract class Unit {
             table.getStackInSlot(getOutputId()).stackSize += result.stackSize;
         }
 
-        onProduction();
+        onProduction(result);
     }
 
     public void onUpdate() {
@@ -250,7 +250,7 @@ public abstract class Unit {
 
     protected abstract ItemStack getProductionResult();
     protected abstract int getOutputId();
-    protected abstract void onProduction();
+    protected abstract void onProduction(ItemStack result);
 
     protected boolean canMove(ItemStack source, ItemStack target) {
         if (source != null) {

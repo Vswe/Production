@@ -1,16 +1,23 @@
 package vswe.production.page.unit;
 
-import net.minecraft.client.Minecraft;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemHoe;
+import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemSword;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.stats.AchievementList;
+import net.minecraft.stats.StatList;
 import net.minecraft.world.World;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
-import vswe.production.gui.container.slot.SlotUnit;
+import vswe.production.gui.GuiBase;
 import vswe.production.gui.container.slot.SlotUnitCraftingGrid;
 import vswe.production.gui.container.slot.SlotUnitCraftingOutput;
 import vswe.production.gui.container.slot.SlotUnitCraftingResult;
@@ -79,11 +86,107 @@ public class UnitCrafting extends Unit {
         return super.canCharge() && table.getUpgradePage().hasUpgrade(id, Upgrade.AUTO_CRAFTER);
     }
 
-    public void onCrafting(boolean auto) {
+    public void onCrafting(EntityPlayer player, ItemStack item) {
+        onCrafted(player, item);
         lockedRecipeGeneration = true;
-        onCrafting(inventoryCrafting, auto, false);
-        lockedRecipeGeneration = false;
+        try {
+            onCrafting(inventoryCrafting, player == null, false);
+        }finally {
+            lockedRecipeGeneration = false;
+        }
         onGridChanged();
+    }
+
+    private void onCrafted(EntityPlayer player, ItemStack itemStack) {
+        if (itemStack == null) {
+            return;
+        }
+        Item item = itemStack.getItem();
+
+        try {
+            FMLCommonHandler.instance().firePlayerCraftingEvent(player, itemStack, inventoryCrafting);
+        }catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        if(player != null) {
+            player.addStat(StatList.objectCraftStats[Item.getIdFromItem(item)], itemStack.stackSize);
+        }
+        try {
+            item.onCreated(itemStack, table.getWorldObj(), player);
+        }catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        if (player != null) {
+            if (item == Item.getItemFromBlock(Blocks.crafting_table)) {
+                player.addStat(AchievementList.buildWorkBench, 1);
+            }else if (item instanceof ItemPickaxe) {
+                player.addStat(AchievementList.buildPickaxe, 1);
+
+                if (((ItemPickaxe)item).func_150913_i() != Item.ToolMaterial.WOOD) {
+                    player.addStat(AchievementList.buildBetterPickaxe, 1);
+                }
+            }else if (item == Item.getItemFromBlock(Blocks.furnace)) {
+                player.addStat(AchievementList.buildFurnace, 1);
+            }else if (item instanceof ItemHoe) {
+                player.addStat(AchievementList.buildHoe, 1);
+            }else if (item == Items.bread) {
+                player.addStat(AchievementList.makeBread, 1);
+            }else if (item == Items.cake) {
+                player.addStat(AchievementList.bakeCake, 1);
+            }else if (item instanceof ItemSword) {
+                player.addStat(AchievementList.buildSword, 1);
+            }else if (item == Item.getItemFromBlock(Blocks.enchanting_table)) {
+                player.addStat(AchievementList.enchantments, 1);
+            }else if (item == Item.getItemFromBlock(Blocks.bookshelf)) {
+                player.addStat(AchievementList.bookcase, 1);
+            }
+        }
+    }
+
+    private static final int CLEAR_SRC_X = 48;
+    private static final int CLEAR_SRC_Y = 112;
+    private static final int CLEAR_SIZE = 9;
+    private static final int CLEAR_OFFSET_X = 3;
+    private static final int CLEAR_OFFSET_Y = 0;
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void draw(GuiBase gui, int mX, int mY) {
+        super.draw(gui, mX, mY);
+
+        boolean isEmpty = true;
+        for (int i = gridId; i < gridId + GRID_SIZE; i++) {
+            if (table.getStackInSlot(i) != null) {
+                isEmpty = false;
+                break;
+            }
+        }
+
+        int x = this.x + START_X + GRID_WIDTH * SLOT_SIZE + CLEAR_OFFSET_X;
+        int y = this.y + START_Y + CLEAR_OFFSET_Y;
+
+        int index;
+        if (isEmpty) {
+            index = 0;
+        }else if (gui.inBounds(x, y, CLEAR_SIZE, CLEAR_SIZE, mX, mY)){
+            index = 2;
+            gui.drawMouseOver("Clear grid");
+        }else{
+            index = 1;
+        }
+
+        gui.drawRect(x, y, CLEAR_SRC_X + index * CLEAR_SIZE, CLEAR_SRC_Y, CLEAR_SIZE, CLEAR_SIZE);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void onClick(GuiBase gui, int mX, int mY) {
+        super.onClick(gui, mX, mY);
+
+        if (gui.inBounds(this.x + START_X + GRID_WIDTH * SLOT_SIZE + CLEAR_OFFSET_X, this.y + START_Y + CLEAR_OFFSET_Y, CLEAR_SIZE, CLEAR_SIZE, mX, mY)) {
+            table.clearGridSend(id);
+        }
     }
 
     private void onCrafting(CraftingBase crafting, boolean auto, boolean fake) {
@@ -130,6 +233,7 @@ public class UnitCrafting extends Unit {
 
     private boolean canAutoCraft;
     private boolean lockedRecipeGeneration;
+
     public void onGridChanged() {
         if (!lockedRecipeGeneration) {
             IRecipe recipe = inventoryCrafting.getRecipe();
@@ -138,6 +242,7 @@ public class UnitCrafting extends Unit {
                 result = result.copy();
             }
             table.setInventorySlotContents(resultId, result);
+
 
             if (table.getUpgradePage().hasUpgrade(id, Upgrade.AUTO_CRAFTER)) {
                 if (recipe == null) {
@@ -414,7 +519,7 @@ public class UnitCrafting extends Unit {
     }
 
     @Override
-    protected void onProduction() {
-        onCrafting(true);
+    protected void onProduction(ItemStack result) {
+        onCrafting(null, result);
     }
 }

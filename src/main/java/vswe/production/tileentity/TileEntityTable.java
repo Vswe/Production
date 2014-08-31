@@ -23,8 +23,11 @@ import vswe.production.gui.container.slot.SlotFuel;
 import vswe.production.gui.menu.GuiMenu;
 import vswe.production.gui.menu.GuiMenuItem;
 import vswe.production.item.Upgrade;
+import vswe.production.network.BasicCount;
 import vswe.production.network.DataReader;
 import vswe.production.network.DataWriter;
+import vswe.production.network.IBitCount;
+import vswe.production.network.LengthCount;
 import vswe.production.network.PacketHandler;
 import vswe.production.network.PacketId;
 import vswe.production.page.Page;
@@ -278,6 +281,9 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
             case RE_OPEN:
                 addPlayer(player);
                 break;
+            case CLEAR:
+                clearGrid(player, dr.readData(GRID_ID_BITS));
+                break;
         }
     }
 
@@ -405,8 +411,8 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
         int oldTransfer = maxTransfer;
 
         try {
-            ISidedInventory fromSided = from instanceof ISidedInventory ? (ISidedInventory)from : null;
-            ISidedInventory toSided = to instanceof ISidedInventory ? (ISidedInventory)to : null;
+            ISidedInventory fromSided = fromSide != -1 && from instanceof ISidedInventory ? (ISidedInventory)from : null;
+            ISidedInventory toSided = toSide != -1 && to instanceof ISidedInventory ? (ISidedInventory)to : null;
 
             for (int fromSlot : fromSlots) {
                 ItemStack fromItem = from.getStackInSlot(fromSlot);
@@ -823,4 +829,30 @@ public class TileEntityTable extends TileEntity implements IInventory, ISidedInv
 
         worldObj.spawnEntityInWorld(entityItem);
     }
+
+    private static final IBitCount GRID_ID_BITS = new LengthCount(4);
+    public void clearGridSend(int id) {
+        DataWriter dw = PacketHandler.getWriter(this, PacketId.CLEAR);
+        dw.writeData(id, GRID_ID_BITS);
+        PacketHandler.sendToServer(dw);
+    }
+
+    private void clearGrid(EntityPlayer player, int id) {
+
+        UnitCrafting crafting = getMainPage().getCraftingList().get(id);
+        if (crafting.isEnabled()) {
+            int[] from = new int[9];
+            for (int i = 0; i < from.length; i++) {
+                from[i] = crafting.getGridId() + i;
+            }
+            int[] to = new int[player.inventory.mainInventory.length];
+            for (int i = 0; i < to.length; i++) {
+                to[i] = i;
+            }
+
+            transfer(this, player.inventory, from, to, -1, -1, Integer.MAX_VALUE);
+        }
+    }
+
+
 }
