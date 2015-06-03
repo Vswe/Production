@@ -103,12 +103,12 @@ public class UnitCrafting extends Unit {
         }
         Item item = itemStack.getItem();
 
-        try {
-            FMLCommonHandler.instance().firePlayerCraftingEvent(player, itemStack, inventoryCrafting);
-        }catch (Exception ex) {
-            ex.printStackTrace();
-        }
         if(player != null) {
+            try {
+                FMLCommonHandler.instance().firePlayerCraftingEvent(player, itemStack, inventoryCrafting);
+            }catch (Exception ex) {
+                ex.printStackTrace();
+            }
             player.addStat(StatList.objectCraftStats[Item.getIdFromItem(item)], itemStack.stackSize);
         }
         try {
