@@ -107,7 +107,7 @@ public abstract class Unit {
 
     public abstract int createSlots(int id);
 
-    public static final int PRODUCTION_TIME = 400;
+    public static final int PRODUCTION_TIME = 800;
     private int productionProgress;
     private int chargeCount;
     public static final int CHARGES_PER_LEVEL = 4;
