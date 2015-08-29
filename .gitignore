@@ -9,6 +9,15 @@ out/
 *.lnk
 *.py
 *.bat
-*gradle
 *gradlew
 logs/
+/bin/
+.classpath
+.project
+.settings/
+asm/
+config/
+options.txt
+saves/
+usernamecache.json
+
