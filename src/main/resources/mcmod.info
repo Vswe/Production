@@ -1,7 +1,7 @@
 [
 {
   "modid": "StevesWorkshop",
-  "name": "Steve's Workshop",
+  "name": "Steve's Workshop (modified by Vindex for bugfixes)",
   "description": "Adds a modular production table for crafting and smelting",
   "version": "${version}",
   "mcversion": "${mcversion}",
