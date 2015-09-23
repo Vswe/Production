@@ -1,0 +1,37 @@
+steves_production:tile.production_table.name=Production Table
+
+# Upgrades
+steves_production:item.production_table_upgrade.blank.name=Blank Upgrade
+steves_production:item.production_table_upgrade.auto_crafter.name=Auto Crafter
+steves_production:item.production_table_upgrade.storage.name=Extra Storage
+steves_production:item.production_table_upgrade.charged.name=Charger
+steves_production:item.production_table_upgrade.speed.name=Production Speed
+steves_production:item.production_table_upgrade.queue.name=Input Queue
+steves_production:item.production_table_upgrade.efficiency.name=Fuel Efficiency
+steves_production:item.production_table_upgrade.lava.name=Lava Generator
+steves_production:item.production_table_upgrade.solar.name=Solar Generator
+steves_production:item.production_table_upgrade.auto_transfer.name=Auto Transfer
+steves_production:item.production_table_upgrade.filter.name=Filter
+steves_production:item.production_table_upgrade.transfer.name=Transfer Capacity
+
+# Upgrade descriptions
+steves_production:item.production_table_upgrade.blank.desc=Crafting component
+steves_production:item.production_table_upgrade.auto_crafter.desc=Convert a crafting table into an auto crafting table
+steves_production:item.production_table_upgrade.storage.desc=Adds extra storage
+steves_production:item.production_table_upgrade.charged.desc=Let idle components charge up for later
+steves_production:item.production_table_upgrade.speed.desc=Increase the production speed
+steves_production:item.production_table_upgrade.queue.desc=Adds an input queue
+steves_production:item.production_table_upgrade.efficiency.desc=Improves the fuel efficiency of solid fuel types
+steves_production:item.production_table_upgrade.lava.desc=Allows lava to be used as fuel
+steves_production:item.production_table_upgrade.solar.desc=Allows the table to be charged by solar power
+steves_production:item.production_table_upgrade.auto_transfer.desc=Enables auto transfer to and from the table
+steves_production:item.production_table_upgrade.filter.desc=Enables transfer filters
+steves_production:item.production_table_upgrade.transfer.desc=Increases the automatic transfer capacity
+
+# Other
+steves_production:item.production_table_upgrade.noStack=Doesn't stack well
+steves_production:item.production_table_upgrade.stackWell=Stacks well up to %d items
+steves_production:item.production_table_upgrade.disabled=This item is disabled
+steves_production:item.production_table_upgrade.parent.crafting=Works with Crafting Tables
+steves_production:item.production_table_upgrade.parent.smelting=Works with Furnaces
+steves_production:item.production_table_upgrade.parent.global=Upgrades the entire Production Table

@@ -10,6 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IIcon;
 import vswe.production.creativetab.CreativeTabProduction;
+import vswe.production.reference.Localization;
 
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class ItemUpgrade extends Item {
     @Override
     public String getUnlocalizedName(ItemStack item) {
         Upgrade upgrade = getUpgrade(item);
-        return "steves_production:item." + (upgrade != null ? upgrade.getUnlocalizedName() : "unknown") + ".name";
+        return Localization.UPGRADE_BASE + "." + (upgrade != null ? upgrade.getUnlocalizedName() : "unknown") /* + ".name" */;
     }
 
     public Upgrade getUpgrade(int dmg) {
@@ -74,7 +75,7 @@ public class ItemUpgrade extends Item {
         if (upgrade != null) {
             upgrade.addInfo(lst);
         }else{
-            lst.add(EnumChatFormatting.RED + "This is not a valid item");
+            lst.add(EnumChatFormatting.RED + Localization.translate(Localization.ITEM_INVALID));
         }
     }
 }

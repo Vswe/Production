@@ -20,8 +20,8 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import vswe.production.StevesProduction;
 import vswe.production.creativetab.CreativeTabProduction;
+import vswe.production.reference.Localization;
 import vswe.production.tileentity.TileEntityTable;
-
 
 public class BlockTable extends BlockContainer {
     protected BlockTable() {
@@ -29,6 +29,12 @@ public class BlockTable extends BlockContainer {
         setCreativeTab(CreativeTabProduction.getTab());
         setHardness(3.5F);
         setStepSound(soundTypePiston);
+        setUnlocalizedName(Localization.TABLE_NAME);
+    }
+    
+    @Override
+    public String getUnlocalizedName() {
+         return Localization.PREFIX + super.getUnlocalizedName();
     }
 
     @Override
