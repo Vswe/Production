@@ -104,20 +104,18 @@ public class UnitCrafting extends Unit {
         Item item = itemStack.getItem();
 
         try {
-            FMLCommonHandler.instance().firePlayerCraftingEvent(player, itemStack, inventoryCrafting);
-        }catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        if(player != null) {
-            player.addStat(StatList.objectCraftStats[Item.getIdFromItem(item)], itemStack.stackSize);
-        }
-        try {
             item.onCreated(itemStack, table.getWorldObj(), player);
         }catch (Exception ex) {
             ex.printStackTrace();
         }
 
         if (player != null) {
+            try {
+                FMLCommonHandler.instance().firePlayerCraftingEvent(player, itemStack, inventoryCrafting);
+            }catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            player.addStat(StatList.objectCraftStats[Item.getIdFromItem(item)], itemStack.stackSize);
             if (item == Item.getItemFromBlock(Blocks.crafting_table)) {
                 player.addStat(AchievementList.buildWorkBench, 1);
             }else if (item instanceof ItemPickaxe) {
